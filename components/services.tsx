@@ -28,6 +28,7 @@ interface Category {
   icon: string;
   color: string;
   isActive: boolean;
+  image?: string;
 }
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -204,30 +205,23 @@ export function Services() {
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
                   <Link href={`/events?category=${service.slug}`}>
-  <Card className="group h-full border-border/50 bg-card hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-1 overflow-hidden cursor-pointer rounded-2xl">
-    <div className="aspect-[16/10] relative overflow-hidden rounded-t-2xl">
-      <img
-        src={service.image}
-        alt={service.name}
-        className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
-      />
-      <div className={`absolute bottom-4 left-4 w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity`}>
-        <Icon className="h-6 w-6 text-white" />
-      </div>
-    </div>
-    <CardContent className="p-6">
-      <h3 className="text-xl font-bold mb-2 text-foreground group-hover:text-primary transition-colors">
-        {service.name}
-      </h3>
-      <p className="text-muted-foreground leading-relaxed mb-4">
-        {service.description}
-      </p>
-      <div className="flex items-center text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-        View Events <ArrowRight className="h-4 w-4 ml-1" />
-      </div>
-    </CardContent>
-  </Card>
-</Link>
+                    <Card className="group h-full border-border/50 bg-card hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-1 overflow-hidden cursor-pointer rounded-2xl">
+                      <CardContent className="p-6">
+                        <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg`}>
+                          <Icon className="h-7 w-7 text-white" />
+                        </div>
+                        <h3 className="text-xl font-bold mb-2 text-foreground group-hover:text-primary transition-colors">
+                          {service.name}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed mb-4 line-clamp-2">
+                          {service.description}
+                        </p>
+                        <div className="flex items-center text-primary text-sm font-medium transition-all duration-300 group-hover:translate-x-1">
+                          View Events <ArrowRight className="h-4 w-4 ml-1 transition-transform duration-300 group-hover:translate-x-1" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 </motion.div>
               );
             })}

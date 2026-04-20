@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar, Send, Sparkles } from "lucide-react"
-import { useState } from "react"
+import { Calendar, Send, Sparkles, Copy, CheckCircle2 } from "lucide-react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 
 const eventTypes = [
   "Wedding",
@@ -23,30 +24,88 @@ const eventTypes = [
   "Other",
 ]
 
-const budgetRanges = [
-  "Under ₹15,000",
-  "₹15,000 - ₹35,000",
-  "₹35,000 - ₹75,000",
-  "₹75,000 - ₹1,50,000",
-  "Above ₹1,50,000",
+const packageOptions = [
+  { value: "Silver", label: "Silver - Basic Decoration (From Rs. 15,000)" },
+  { value: "Gold", label: "Gold - Decoration + Cake + Photography (From Rs. 35,000)" },
+  { value: "Premium", label: "Premium - All-in-one Package (From Rs. 75,000)" },
+  { value: "Custom", label: "Custom Package - Build Your Own" },
 ]
 
+interface BookingFormData {
+  name: string
+  email: string
+  phone: string
+  eventType: string
+  eventDate: string
+  guestCount: string
+  venue: string
+  packageType: string
+  customServices: string[]
+  additionalNotes: string
+}
+
 export function Booking() {
-  const [formData, setFormData] = useState({
+  const searchParams = useSearchParams()
+  const [formData, setFormData] = useState<BookingFormData>({
     name: "",
+    email: "",
     phone: "",
     eventType: "",
     eventDate: "",
-    budget: "",
-    message: "",
+    guestCount: "",
+    venue: "",
+    packageType: "",
+    customServices: [],
+    additionalNotes: "",
   })
   const [submitted, setSubmitted] = useState(false)
+  const [trackingId, setTrackingId] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [copied, setCopied] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const packageParam = searchParams.get('package')
+    if (packageParam) {
+      setFormData(prev => ({ ...prev, packageType: packageParam }))
+    }
+    const servicesParam = searchParams.get('services')
+    if (servicesParam) {
+      setFormData(prev => ({ ...prev, customServices: servicesParam.split(',') }))
+    }
+  }, [searchParams])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In production, this would send to a backend
-    console.log(formData)
-    setSubmitted(true)
+    setLoading(true)
+    setError("")
+
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setTrackingId(data.data.trackingId)
+        setSubmitted(true)
+      } else {
+        setError(data.message || 'Something went wrong. Please try again.')
+      }
+    } catch {
+      setError('Failed to submit booking. Please check your connection and try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const copyTrackingId = () => {
+    navigator.clipboard.writeText(trackingId)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
@@ -92,18 +151,50 @@ export function Booking() {
                   className="text-center py-12"
                 >
                   <div className="w-20 h-20 gradient-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Sparkles className="h-10 w-10 text-primary-foreground" />
+                    <CheckCircle2 className="h-10 w-10 text-primary-foreground" />
                   </div>
-                  <h4 className="text-2xl font-bold text-foreground mb-2">Thank You!</h4>
-                  <p className="text-muted-foreground">
+                  <h4 className="text-2xl font-bold text-foreground mb-2">Booking Confirmed!</h4>
+                  <p className="text-muted-foreground mb-6">
                     We&apos;ve received your booking request. Our team will contact you soon!
+                  </p>
+                  
+                  <div className="bg-muted p-4 rounded-xl mb-6">
+                    <p className="text-sm text-muted-foreground mb-2">Your Tracking ID</p>
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="text-2xl font-mono font-bold text-primary">{trackingId}</span>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={copyTrackingId}
+                        className="h-8 w-8"
+                      >
+                        {copied ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Save this ID to track your booking status
+                    </p>
+                  </div>
+
+                  <p className="text-sm text-muted-foreground">
+                    A confirmation email has been sent to your email address.
                   </p>
                 </motion.div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {error && (
+                    <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+                      {error}
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
+                      <Label htmlFor="name">Full Name *</Label>
                       <Input
                         id="name"
                         placeholder="Enter your name"
@@ -114,7 +205,22 @@ export function Booking() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
+                      <Label htmlFor="email">Email Address *</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="your@email.com"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        required
+                        className="bg-background"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Phone Number *</Label>
                       <Input
                         id="phone"
                         type="tel"
@@ -125,14 +231,28 @@ export function Booking() {
                         className="bg-background"
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="guestCount">Expected Guests *</Label>
+                      <Input
+                        id="guestCount"
+                        type="number"
+                        placeholder="Number of guests"
+                        min="1"
+                        value={formData.guestCount}
+                        onChange={(e) => setFormData({ ...formData, guestCount: e.target.value })}
+                        required
+                        className="bg-background"
+                      />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="eventType">Event Type</Label>
+                      <Label htmlFor="eventType">Event Type *</Label>
                       <Select
                         value={formData.eventType}
                         onValueChange={(value) => setFormData({ ...formData, eventType: value })}
+                        required
                       >
                         <SelectTrigger className="bg-background">
                           <SelectValue placeholder="Select event type" />
@@ -147,7 +267,7 @@ export function Booking() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="eventDate">Event Date</Label>
+                      <Label htmlFor="eventDate">Event Date *</Label>
                       <div className="relative">
                         <Input
                           id="eventDate"
@@ -156,6 +276,7 @@ export function Booking() {
                           onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
                           required
                           className="bg-background"
+                          min={new Date().toISOString().split('T')[0]}
                         />
                         <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                       </div>
@@ -163,39 +284,82 @@ export function Booking() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="budget">Budget Range</Label>
+                    <Label htmlFor="venue">Venue / Location *</Label>
+                    <Input
+                      id="venue"
+                      placeholder="Enter venue address or location"
+                      value={formData.venue}
+                      onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                      required
+                      className="bg-background"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="packageType">Select Package *</Label>
                     <Select
-                      value={formData.budget}
-                      onValueChange={(value) => setFormData({ ...formData, budget: value })}
+                      value={formData.packageType}
+                      onValueChange={(value) => setFormData({ ...formData, packageType: value })}
+                      required
                     >
                       <SelectTrigger className="bg-background">
-                        <SelectValue placeholder="Select your budget" />
+                        <SelectValue placeholder="Choose a package" />
                       </SelectTrigger>
                       <SelectContent>
-                        {budgetRanges.map((range) => (
-                          <SelectItem key={range} value={range}>
-                            {range}
+                        {packageOptions.map((pkg) => (
+                          <SelectItem key={pkg.value} value={pkg.value}>
+                            {pkg.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
 
+                  {formData.customServices.length > 0 && (
+                    <div className="p-3 bg-primary/5 rounded-lg">
+                      <p className="text-sm font-medium text-foreground mb-2">Selected Services:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {formData.customServices.map((service, index) => (
+                          <span 
+                            key={index}
+                            className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full"
+                          >
+                            {service}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     <Label htmlFor="message">Additional Details</Label>
                     <Textarea
                       id="message"
-                      placeholder="Tell us more about your event, venue, theme preferences, or any special requirements..."
+                      placeholder="Tell us more about your event, theme preferences, or any special requirements..."
                       rows={4}
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      value={formData.additionalNotes}
+                      onChange={(e) => setFormData({ ...formData, additionalNotes: e.target.value })}
                       className="bg-background resize-none"
                     />
                   </div>
 
-                  <Button type="submit" size="lg" className="w-full gradient-primary text-primary-foreground hover:opacity-90 shadow-lg">
-                    <Send className="mr-2 h-4 w-4" />
-                    Submit Booking Request
+                  <Button 
+                    type="submit" 
+                    size="lg" 
+                    className="w-full gradient-primary text-primary-foreground hover:opacity-90 shadow-lg"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-foreground border-t-transparent mr-2" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="mr-2 h-4 w-4" />
+                        Submit Booking Request
+                      </>
+                    )}
                   </Button>
                 </form>
               )}
