@@ -117,7 +117,7 @@ export function Contact() {
             className="h-[400px] lg:h-full min-h-[400px] rounded-2xl overflow-hidden border border-border/50"
           >
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d239487.1824686893!2d85.67408285!3d20.30074555!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a1909d2d5170aa5%3A0xfc580e2b68b33fa8!2sBhubaneswar%2C%20Odisha!5e0!3m2!1sen!2sin!4v1699999999999!5m2!1sen!2sin"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d60246.47405404912!2d84.76705717031693!3d19.308240527632503!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a3d500ef1cb60ad%3A0x5b75778874294ff!2sBrahmapur%2C%20Odisha!5e0!3m2!1sen!2sin!4v1776679851421!5m2!1sen!2sin"
               width="100%"
               height="100%"
               style={{ border: 0 }}
@@ -126,6 +126,8 @@ export function Contact() {
               referrerPolicy="no-referrer-when-downgrade"
               title="EventAura Location"
             />
+
+            {/* <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d60246.47405404912!2d84.76705717031693!3d19.308240527632503!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a3d500ef1cb60ad%3A0x5b75778874294ff!2sBrahmapur%2C%20Odisha!5e0!3m2!1sen!2sin!4v1776679851421!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe> */}
           </motion.div>
         </div>
 

@@ -129,7 +129,8 @@ export const getFeaturedEvents = async (req, res) => {
 export const createEvent = async (req, res) => {
   try {
     const event = await Event.create(req.body);
-
+    console.log("createEvent",req.body);
+    console.log("Created event:", event);
     res.status(201).json({
       success: true,
       event

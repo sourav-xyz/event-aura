@@ -11,6 +11,7 @@ import userRoutes from './routes/users.js';
 import categoryRoutes from './routes/categories.js';
 import eventRoutes from './routes/events.js';
 import orderRoutes from './routes/orders.js';
+import bookingRoutes from './routes/bookings.js';
 
 // Load env vars
 dotenv.config();
@@ -34,11 +35,12 @@ app.use(cors({
 }));
 
 // Mount routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);  
+app.use('/api/users', userRoutes); 
 app.use('/api/categories', categoryRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

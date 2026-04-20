@@ -4,8 +4,9 @@ import { sendEmail, emailTemplates } from '../utils/email.js';
 
 // @desc    Create new order
 // @route   POST /api/orders
-// @access  Private
+// @access  Public (guests can book, or authenticated users)
 export const createOrder = async (req, res) => {
+  console.log('Create order request received');
   try {
     const {
       event: eventId,
@@ -17,57 +18,73 @@ export const createOrder = async (req, res) => {
       pricing
     } = req.body;
 
-    // Get event details
-    const event = await Event.findById(eventId).populate('category');
-    if (!event) {
-      return res.status(404).json({
-        success: false,
-        message: 'Event not found'
-      });
+    console.log('Create order request body:', req.body);
+
+    // Event is optional - try to find if provided, but don't fail if not found
+    let event = null;
+    let categoryId = null;
+    
+    if (eventId) {
+      event = await Event.findById(eventId).populate('category');
+      if (event) {
+        categoryId = event.category._id;
+        // Update event booking count
+        event.bookingCount += 1;
+        await event.save();
+      }
     }
 
-    // Create order
+    // Create order - event is optional
     const order = await Order.create({
-      user: req.user._id,
-      event: eventId,
-      category: event.category._id,
+      user: req.user ? req.user._id : undefined,
+      event: eventId || undefined,
+      category: categoryId || undefined,
       packageSelected,
       themeSelected,
       addonsSelected,
       eventDetails,
       contactInfo: {
-        name: contactInfo?.name || req.user.name,
-        email: contactInfo?.email || req.user.email,
-        phone: contactInfo?.phone || req.user.phone,
+        name: contactInfo?.name || (req.user?.name || 'Guest'),
+        email: contactInfo?.email || (req.user?.email || ''),
+        phone: contactInfo?.phone || (req.user?.phone || ''),
         alternatePhone: contactInfo?.alternatePhone
       },
       pricing,
       status: 'pending',
       statusHistory: [{ status: 'pending', updatedAt: new Date() }]
     });
-
-    // Update event booking count
-    event.bookingCount += 1;
-    await event.save();
-
+    console.log('Order created:', order);
     // Send confirmation email
     const populatedOrder = await Order.findById(order._id)
       .populate('event', 'name')
       .populate('user', 'email');
 
+      console.log('Populated order for email:', populatedOrder);
+
     const emailContent = emailTemplates.orderConfirmation({
       ...order.toObject(),
-      eventName: event.name
+      eventName: event?.name || 'Event Booking'
     });
 
     await sendEmail({
-      to: populatedOrder.contactInfo.email,
+      to: order.contactInfo.email,
       subject: emailContent.subject,
       html: emailContent.html
     });
 
     res.status(201).json({
       success: true,
+      message: 'Booking created successfully',
+      data: {
+        _id: populatedOrder._id,
+        orderNumber: populatedOrder.orderNumber,
+        trackingId: populatedOrder.orderNumber,  // Use orderNumber as trackingId
+        status: populatedOrder.status,
+        contactInfo: populatedOrder.contactInfo,
+        eventDetails: populatedOrder.eventDetails,
+        pricing: populatedOrder.pricing,
+        createdAt: populatedOrder.createdAt
+      },
       order: populatedOrder
     });
   } catch (error) {
@@ -276,7 +293,7 @@ export const addRating = async (req, res) => {
 // @access  Private/Admin
 export const getAllOrders = async (req, res) => {
   try {
-    const { status, startDate, endDate, search } = req.query;
+    const { status, startDate, endDate, search, page = 1, limit = 10 } = req.query;
 
     let query = {};
 
@@ -299,11 +316,29 @@ export const getAllOrders = async (req, res) => {
       ];
     }
 
+    // Calculate pagination
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.max(1, parseInt(limit));
+    const skip = (pageNum - 1) * limitNum;
+
+    // Get total count for pagination
+    const total = await Order.countDocuments(query);
+    const totalPages = Math.ceil(total / limitNum);
+
     const orders = await Order.find(query)
       .populate('event', 'name slug')
       .populate('category', 'name')
       .populate('user', 'name email phone')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    console.log('First order:', orders[0] ? {
+      id: orders[0]._id,
+      contactInfo: orders[0].contactInfo,
+      pricing: orders[0].pricing,
+      eventDetails: orders[0].eventDetails
+    } : 'No orders');
 
     // Calculate stats
     const stats = {
@@ -315,13 +350,20 @@ export const getAllOrders = async (req, res) => {
       cancelled: orders.filter(o => o.status === 'cancelled').length,
       totalRevenue: orders
         .filter(o => o.status !== 'cancelled')
-        .reduce((sum, o) => sum + o.pricing.total, 0)
+        .reduce((sum, o) => sum + (o.pricing?.total || 0), 0)
     };
 
     res.json({
       success: true,
       count: orders.length,
+      total,
+      page: pageNum,
+      totalPages,
       stats,
+      data: {
+        orders,
+        totalPages
+      },
       orders
     });
   } catch (error) {

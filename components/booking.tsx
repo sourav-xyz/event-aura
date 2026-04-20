@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar, Send, Sparkles, Copy, CheckCircle2 } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 
 const eventTypes = [
@@ -25,10 +25,10 @@ const eventTypes = [
 ]
 
 const packageOptions = [
-  { value: "Silver", label: "Silver - Basic Decoration (From Rs. 15,000)" },
-  { value: "Gold", label: "Gold - Decoration + Cake + Photography (From Rs. 35,000)" },
-  { value: "Premium", label: "Premium - All-in-one Package (From Rs. 75,000)" },
-  { value: "Custom", label: "Custom Package - Build Your Own" },
+  { value: "Silver", label: "Silver - Basic Decoration (From Rs. 15,000)", price: 15000 },
+  { value: "Gold", label: "Gold - Decoration + Cake + Photography (From Rs. 35,000)", price: 35000 },
+  { value: "Premium", label: "Premium - All-in-one Package (From Rs. 75,000)", price: 75000 },
+  { value: "Custom", label: "Custom Package - Build Your Own", price: 0 },
 ]
 
 interface BookingFormData {
@@ -45,7 +45,31 @@ interface BookingFormData {
 }
 
 export function Booking() {
-  const searchParams = useSearchParams()
+  return (
+    <Suspense fallback={<BookingLoadingFallback />}>
+      <BookingForm />
+    </Suspense>
+  )
+}
+
+function BookingLoadingFallback() {
+  return (
+    <section id="booking" className="py-24 bg-muted/30">
+      <div className="container mx-auto px-4">
+        <div className="max-w-2xl mx-auto">
+          <Card className="border-border/50 shadow-xl">
+            <CardContent className="p-6 h-96 flex items-center justify-center">
+              <p className="text-muted-foreground">Loading form...</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function BookingForm() {
+  const searchParams = useSearchParams() ?? new URLSearchParams()
   const [formData, setFormData] = useState<BookingFormData>({
     name: "",
     email: "",
@@ -65,6 +89,8 @@ export function Booking() {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
+    if (!searchParams) return
+    
     const packageParam = searchParams.get('package')
     if (packageParam) {
       setFormData(prev => ({ ...prev, packageType: packageParam }))
@@ -79,24 +105,67 @@ export function Booking() {
     e.preventDefault()
     setLoading(true)
     setError("")
-
+    console.log("Submitting booking with data:", formData) // Debug log 
     try {
-      const response = await fetch('/api/bookings', {
+      let packagePrice = 0
+      const selectedPackage = packageOptions.find(pkg => pkg.value === formData.packageType)
+
+      if (selectedPackage) {
+        packagePrice = selectedPackage.price
+      }
+
+      const transformedData = {
+        eventDetails: {
+          eventDate: formData.eventDate,
+          venue: formData.venue,
+          guestCount: Number(formData.guestCount) || 0,
+          specialRequests: formData.additionalNotes,
+        },
+        contactInfo: {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+        },
+        packageSelected: selectedPackage ? {
+          name: selectedPackage.label,
+          price: packagePrice,
+          features: []
+        } : null,
+        themeSelected: null,
+        addonsSelected: [],
+        pricing: {
+          packagePrice,
+          themePrice: 0,
+          addonsPrice: 0,
+          subtotal: packagePrice,
+          discount: 0,
+          tax: 0,
+          total: packagePrice
+        }
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bookings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(transformedData),
       })
+      console.log("API response status:", response);
+      if (!response.ok) {
+        throw new Error('Server error')
+      }
 
       const data = await response.json()
 
-      if (data.success) {
-        setTrackingId(data.data.trackingId)
+      if (data.success && data.data) {
+        setTrackingId(data.data.trackingId || 'N/A')
         setSubmitted(true)
       } else {
-        setError(data.message || 'Something went wrong. Please try again.')
+        setError(data.message || 'Something went wrong')
       }
-    } catch {
-      setError('Failed to submit booking. Please check your connection and try again.')
+
+    } catch (err: any) {
+      console.error(err)
+      setError(err.message || 'Failed to submit booking')
     } finally {
       setLoading(false)
     }

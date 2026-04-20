@@ -13,8 +13,10 @@ import { protect, adminOnly } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// User routes
-router.post('/', protect, createOrder);
+// Public routes - no authentication required
+router.post('/', createOrder); // Allow guests to create bookings
+
+// User routes - require authentication
 router.get('/my-orders', protect, getMyOrders);
 router.get('/:id', protect, getOrder);
 router.put('/:id/cancel', protect, cancelOrder);

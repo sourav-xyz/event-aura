@@ -17,16 +17,15 @@ import Link from "next/link"
 interface Order {
   _id: string
   orderNumber: string
-  user: { _id: string; name: string; email: string; phone: string }
-  event: { _id: string; name: string; slug: string }
-  selectedPackage: { name: string; price: number }
-  selectedTheme: { name: string; price: number }
-  selectedAddons: Array<{ name: string; price: number }>
-  eventDate: string
-  eventTime: string
-  venue: { address: string; city: string }
-  totalAmount: number
-  paymentStatus: string
+  user?: { _id: string; name: string; email: string; phone: string }
+  event?: { _id: string; name: string; slug: string }
+  packageSelected?: { name: string; price: number }
+  themeSelected?: { name: string; additionalPrice?: number }
+  addonsSelected?: Array<{ name: string; price: number }>
+  eventDetails?: { eventDate?: string; eventTime?: string; venue?: string; guestCount?: number }
+  contactInfo?: { name: string; email: string; phone: string }
+  pricing?: { total?: number }
+  payment?: { status?: string }
   status: string
   createdAt: string
 }
@@ -48,14 +47,19 @@ export default function AdminOrdersPage() {
   const fetchOrders = async () => {
     try {
       setLoading(true)
-      const params = new URLSearchParams({ page: page.toString(), limit: "10" })
+      const params = new URLSearchParams({ 
+        page: page.toString(), 
+        limit: "10" 
+      })
       if (statusFilter) params.append("status", statusFilter)
       
-      const response = await api.get(`/orders/admin/all?${params}`)
-      setOrders(response.data.data.orders)
-      setTotalPages(response.data.data.totalPages)
+      const response = await api.get<any>(`/orders/admin/all?${params}`)
+      setOrders(response.orders || [])
+      setTotalPages(response.totalPages || 1)
     } catch (error) {
       console.error("Failed to fetch orders:", error)
+      setOrders([])
+      setTotalPages(1)
     } finally {
       setLoading(false)
     }
@@ -64,7 +68,7 @@ export default function AdminOrdersPage() {
   const updateOrderStatus = async (orderId: string, status: string) => {
     try {
       setUpdating(true)
-      await api.patch(`/orders/admin/${orderId}/status`, { status })
+      await api.put(`/orders/${orderId}/status`, { status })
       fetchOrders()
       if (selectedOrder?._id === orderId) {
         setSelectedOrder({ ...selectedOrder, status })
@@ -105,6 +109,8 @@ export default function AdminOrdersPage() {
 
   const filteredOrders = orders.filter(order => 
     order.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
+    order.contactInfo?.name?.toLowerCase().includes(search.toLowerCase()) ||
+    order.contactInfo?.email?.toLowerCase().includes(search.toLowerCase()) ||
     order.user?.name?.toLowerCase().includes(search.toLowerCase()) ||
     order.user?.email?.toLowerCase().includes(search.toLowerCase())
   )
@@ -186,11 +192,11 @@ export default function AdminOrdersPage() {
                             <p className="text-xs text-muted-foreground">{formatDate(order.createdAt)}</p>
                           </td>
                           <td className="py-3 px-2">
-                            <p className="font-medium text-foreground text-sm">{order.user?.name}</p>
-                            <p className="text-xs text-muted-foreground">{order.user?.phone}</p>
+                            <p className="font-medium text-foreground text-sm">{order.contactInfo?.name || order.user?.name || 'N/A'}</p>
+                            <p className="text-xs text-muted-foreground">{order.contactInfo?.phone || order.user?.phone || 'N/A'}</p>
                           </td>
                           <td className="py-3 px-2 hidden md:table-cell font-medium text-foreground">
-                            {formatCurrency(order.totalAmount)}
+                            {formatCurrency(order.pricing?.total || 0)}
                           </td>
                           <td className="py-3 px-2">
                             <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
@@ -261,19 +267,21 @@ export default function AdminOrdersPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 bg-muted/50 rounded-lg">
                     <p className="text-xs text-muted-foreground">Event Date</p>
-                    <p className="font-medium text-sm">{formatDate(selectedOrder.eventDate)}</p>
+                    <p className="font-medium text-sm">
+                      {selectedOrder.eventDetails?.eventDate ? formatDate(selectedOrder.eventDetails.eventDate) : 'N/A'}
+                    </p>
                   </div>
                   <div className="p-3 bg-muted/50 rounded-lg">
                     <p className="text-xs text-muted-foreground">Event Time</p>
-                    <p className="font-medium text-sm">{selectedOrder.eventTime}</p>
+                    <p className="font-medium text-sm">{selectedOrder.eventDetails?.eventTime || 'N/A'}</p>
                   </div>
                 </div>
 
                 <div className="p-3 bg-muted/50 rounded-lg">
                   <p className="text-xs text-muted-foreground">Customer</p>
-                  <p className="font-medium text-sm">{selectedOrder.user?.name}</p>
-                  <p className="text-xs text-muted-foreground">{selectedOrder.user?.email}</p>
-                  <p className="text-xs text-muted-foreground">{selectedOrder.user?.phone}</p>
+                  <p className="font-medium text-sm">{selectedOrder.contactInfo?.name || selectedOrder.user?.name || 'N/A'}</p>
+                  <p className="text-xs text-muted-foreground">{selectedOrder.contactInfo?.email || selectedOrder.user?.email || 'N/A'}</p>
+                  <p className="text-xs text-muted-foreground">{selectedOrder.contactInfo?.phone || selectedOrder.user?.phone || 'N/A'}</p>
                 </div>
 
                 <div className="p-3 bg-muted/50 rounded-lg">
@@ -284,25 +292,25 @@ export default function AdminOrdersPage() {
                 <div className="p-3 bg-muted/50 rounded-lg">
                   <p className="text-xs text-muted-foreground">Package</p>
                   <div className="flex items-center justify-between">
-                    <p className="font-medium text-sm">{selectedOrder.selectedPackage?.name}</p>
-                    <p className="text-sm">{formatCurrency(selectedOrder.selectedPackage?.price || 0)}</p>
+                    <p className="font-medium text-sm">{selectedOrder.packageSelected?.name || 'N/A'}</p>
+                    <p className="text-sm">{formatCurrency(selectedOrder.packageSelected?.price || 0)}</p>
                   </div>
                 </div>
 
-                {selectedOrder.selectedTheme && (
+                {selectedOrder.themeSelected?.name && (
                   <div className="p-3 bg-muted/50 rounded-lg">
                     <p className="text-xs text-muted-foreground">Theme</p>
                     <div className="flex items-center justify-between">
-                      <p className="font-medium text-sm">{selectedOrder.selectedTheme?.name}</p>
-                      <p className="text-sm">{formatCurrency(selectedOrder.selectedTheme?.price || 0)}</p>
+                      <p className="font-medium text-sm">{selectedOrder.themeSelected?.name}</p>
+                      <p className="text-sm">{formatCurrency(selectedOrder.themeSelected?.additionalPrice || 0)}</p>
                     </div>
                   </div>
                 )}
 
-                {selectedOrder.selectedAddons && selectedOrder.selectedAddons.length > 0 && (
+                {selectedOrder.addonsSelected && selectedOrder.addonsSelected.length > 0 && (
                   <div className="p-3 bg-muted/50 rounded-lg">
                     <p className="text-xs text-muted-foreground mb-2">Add-ons</p>
-                    {selectedOrder.selectedAddons.map((addon, idx) => (
+                    {selectedOrder.addonsSelected.map((addon, idx) => (
                       <div key={idx} className="flex items-center justify-between text-sm">
                         <p>{addon.name}</p>
                         <p>{formatCurrency(addon.price)}</p>
@@ -314,7 +322,7 @@ export default function AdminOrdersPage() {
                 <div className="p-3 bg-primary/10 rounded-lg">
                   <div className="flex items-center justify-between">
                     <p className="font-semibold">Total Amount</p>
-                    <p className="font-bold text-primary text-lg">{formatCurrency(selectedOrder.totalAmount)}</p>
+                    <p className="font-bold text-primary text-lg">{formatCurrency(selectedOrder.pricing?.total || 0)}</p>
                   </div>
                 </div>
 
