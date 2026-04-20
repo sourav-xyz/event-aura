@@ -78,7 +78,7 @@ export function Gallery() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.05 }}
-              className={`relative group cursor-pointer overflow-hidden rounded-2xl ${
+              className={`relative group cursor-pointer overflow-hidden rounded-2xl shadow-md hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 ${
                 index === 0 || index === 5 ? "md:col-span-2 md:row-span-2" : ""
               }`}
               onClick={() => setSelectedImage(image.src)}
@@ -90,18 +90,19 @@ export function Gallery() {
                   src={image.src}
                   alt={image.alt}
                   fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-90"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="w-12 h-12 rounded-full bg-card/90 flex items-center justify-center">
-                    <ZoomIn className="h-5 w-5 text-foreground" />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-100 scale-75">
+                  <div className="w-14 h-14 rounded-full bg-card/95 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                    <ZoomIn className="h-6 w-6 text-primary" />
                   </div>
                 </div>
-                <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="inline-block bg-primary/90 text-primary-foreground text-xs font-medium px-3 py-1 rounded-full">
+                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                  <span className="inline-block bg-primary text-primary-foreground text-xs font-semibold px-4 py-1.5 rounded-full shadow-md">
                     {image.category}
                   </span>
+                  <p className="text-white text-sm mt-2 font-medium">{image.alt}</p>
                 </div>
               </div>
             </motion.div>

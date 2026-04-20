@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Menu, X, Sparkles, User, LogOut, ShoppingBag, LayoutDashboard } from "lucide-react"
+import { Menu, X, Sparkles, User, LogOut, ShoppingBag, LayoutDashboard, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
 import { useAuth } from "@/context/auth-context"
@@ -13,7 +13,7 @@ const navLinks = [
   { href: "#services", label: "Services" },
   { href: "#packages", label: "Packages" },
   { href: "#gallery", label: "Gallery" },
-  { href: "/faq", label: "FAQ" },
+  { href: "/track", label: "Track Booking" },
   { href: "/contact", label: "Contact" },
 ]
 

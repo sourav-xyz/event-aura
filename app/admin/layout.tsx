@@ -11,6 +11,7 @@ import {
   Calendar, 
   FolderOpen, 
   ShoppingCart, 
+  CalendarCheck,
   Menu,
   X,
   LogOut,
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils"
 
 const sidebarLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/bookings", label: "Bookings", icon: CalendarCheck },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/categories", label: "Categories", icon: FolderOpen },
