@@ -199,7 +199,7 @@ const seedDatabase = async () => {
     await User.deleteMany({});
     await Category.deleteMany({});
     await Event.deleteMany({});
-    console.log('Cleared existing data');
+
 
     // Create admin user
     const adminUser = await User.create({
@@ -210,7 +210,7 @@ const seedDatabase = async () => {
       role: 'admin',
       isEmailVerified: true
     });
-    console.log('Created admin user:', adminUser.email);
+
 
     // Create categories
     const createdCategories = await Category.insertMany(categories);

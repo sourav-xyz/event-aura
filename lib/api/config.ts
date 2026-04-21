@@ -1,5 +1,6 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
+console.log('API URL:', API_URL);
 interface FetchOptions extends RequestInit {
   data?: Record<string, unknown>;
 }

@@ -85,7 +85,7 @@ export const emailTemplates = {
               <a href="#">WhatsApp</a>
             </div>
             <p>Bhubaneswar & Berhampur, Odisha</p>
-            <p>+91 98765 43210 | hello@eventaura.com</p>
+            <p>+91 9658780033 | hello@eventaura.com</p>
           </div>
         </div>
       </body>
@@ -241,8 +241,8 @@ export const emailTemplates = {
           </div>
           <div class="footer">
             <p><strong>Need help?</strong></p>
-            <p>Call us: +91 98765 43210</p>
-            <p>WhatsApp: +91 98765 43210</p>
+            <p>Call us: +91 9658780033</p>
+            <p>WhatsApp: +91 9658780033</p>
             <p>Email: hello@eventaura.com</p>
           </div>
         </div>
@@ -284,7 +284,7 @@ export const emailTemplates = {
             <a href="${process.env.FRONTEND_URL}/orders/${order._id}" class="cta">View Order</a>
           </div>
           <div class="footer">
-            <p>Questions? Contact us at +91 98765 43210</p>
+            <p>Questions? Contact us at +91 9658780033</p>
           </div>
         </div>
       </body>

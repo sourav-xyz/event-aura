@@ -39,14 +39,31 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
 
+  console.log("stats", stats);
+
   useEffect(() => {
     fetchStats()
   }, [])
 
   const fetchStats = async () => {
     try {
-      const response = await api.get("/orders/admin/stats")
-      setStats(response.data.data)
+      const response = await api.get("/orders/admin/all");
+      console.log("Stats response:", response);
+
+      const s = response.stats;
+
+      setStats({
+        totalOrders: s.total,
+        totalRevenue: s.totalRevenue,
+        totalUsers: 0, // abhi backend me nahi hai
+        totalEvents: 0, // abhi backend me nahi hai
+        pendingOrders: s.pending,
+        confirmedOrders: s.confirmed,
+        completedOrders: s.completed,
+        cancelledOrders: s.cancelled,
+        recentOrders: response.orders || []
+      });
+
     } catch (error) {
       console.error("Failed to fetch stats:", error)
     } finally {
