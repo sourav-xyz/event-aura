@@ -17,7 +17,7 @@ import {
   Calendar, Clock, MapPin, Users, Check, ArrowLeft, 
   User, Mail, Phone, CreditCard, Sparkles
 } from 'lucide-react';
-import Navbar from '@/components/navbar';
+import { Navbar } from '@/components/navbar';
 
 interface BookingData {
   eventId: string;

@@ -9,12 +9,12 @@ import {
   updateOrderStatus,
   addOrderNote
 } from '../controllers/orderController.js';
-import { protect, adminOnly } from '../middleware/auth.js';
+import { protect, adminOnly, optionalAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Public routes - no authentication required
-router.post('/', createOrder); // Allow guests to create bookings
+router.post('/', optionalAuth, createOrder); // Allow guests to create bookings
 
 // User routes - require authentication
 router.get('/my-orders', protect, getMyOrders);

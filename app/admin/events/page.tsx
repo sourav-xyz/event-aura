@@ -56,6 +56,8 @@ export default function AdminEventsPage() {
     description: "",
     shortDescription: "",
     category: "",
+    basePrice: 0,
+    coverImage: "",
     images: [""],
     packages: [{ name: "Silver", price: 15000, features: [""] }],
     themes: [{ name: "", price: 0, description: "" }],
@@ -85,9 +87,22 @@ export default function AdminEventsPage() {
   const fetchCategories = async () => {
     try {
       const response = await api.get("/categories")
-      setCategories(response.data.data)
+      setCategories(response.data.categories)
     } catch (error) {
       console.error("Failed to fetch categories:", error)
+      // Fallback categories with valid MongoDB ObjectIds
+      const fallbackCategories = [
+        { _id: "000000000000000000000001", name: "Wedding" },
+        { _id: "000000000000000000000002", name: "Birthday" },
+        { _id: "000000000000000000000003", name: "Thread Ceremony" },
+        { _id: "000000000000000000000004", name: "Surprise Party" },
+        { _id: "000000000000000000000005", name: "Corporate Event" },
+        { _id: "000000000000000000000006", name: "College Event" },
+        { _id: "000000000000000000000007", name: "Baby Shower" },
+        { _id: "000000000000000000000008", name: "Anniversary" },
+        { _id: "000000000000000000000009", name: "Housewarming" },
+      ]
+      setCategories(fallbackCategories)
     }
   }
 
@@ -95,12 +110,20 @@ export default function AdminEventsPage() {
     e.preventDefault()
     try {
       setSaving(true)
+      const filteredImages = formData.images.filter(img => img.trim() !== "")
       const payload = {
-        ...formData,
-        images: formData.images.filter(img => img.trim() !== ""),
+        name: formData.name,
+        description: formData.description,
+        shortDescription: formData.shortDescription,
+        category: formData.category,
+        basePrice: formData.basePrice,
+        coverImage: formData.coverImage || (filteredImages[0] || ""),
+        gallery: filteredImages,
         packages: formData.packages.filter(pkg => pkg.name.trim() !== ""),
         themes: formData.themes.filter(theme => theme.name.trim() !== ""),
-        addons: formData.addons.filter(addon => addon.name.trim() !== "")
+        addons: formData.addons.filter(addon => addon.name.trim() !== ""),
+        isActive: formData.isActive,
+        isFeatured: formData.isFeatured
       }
       
       if (editingEvent) {
@@ -124,7 +147,9 @@ export default function AdminEventsPage() {
       description: event.description,
       shortDescription: event.shortDescription,
       category: event.category?._id || "",
-      images: event.images.length > 0 ? event.images : [""],
+      basePrice: event.basePrice || 0,
+      coverImage: event.coverImage || "",
+      images: event.gallery && event.gallery.length > 0 ? event.gallery : [""],
       packages: event.packages.length > 0 ? event.packages : [{ name: "Silver", price: 15000, features: [""] }],
       themes: event.themes.length > 0 ? event.themes : [{ name: "", price: 0, description: "" }],
       addons: event.addons.length > 0 ? event.addons : [{ name: "", price: 0, description: "" }],
@@ -155,6 +180,8 @@ export default function AdminEventsPage() {
       description: "",
       shortDescription: "",
       category: "",
+      basePrice: 0,
+      coverImage: "",
       images: [""],
       packages: [{ name: "Silver", price: 15000, features: [""] }],
       themes: [{ name: "", price: 0, description: "" }],
@@ -284,6 +311,28 @@ export default function AdminEventsPage() {
                     onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
                     placeholder="Brief one-liner about the event"
                   />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Base Price</label>
+                    <Input
+                      type="number"
+                      value={formData.basePrice}
+                      onChange={(e) => setFormData({ ...formData, basePrice: parseInt(e.target.value) || 0 })}
+                      placeholder="e.g., 15000"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Cover Image URL</label>
+                    <Input
+                      value={formData.coverImage}
+                      onChange={(e) => setFormData({ ...formData, coverImage: e.target.value })}
+                      placeholder="https://example.com/image.jpg"
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">

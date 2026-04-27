@@ -7,19 +7,7 @@ import Image from "next/image"
 import Link from "next/link"
 
 const themes = [
-  {
-    name: "Romantic Theme",
-    description: "Soft florals, fairy lights, and dreamy pastels for intimate celebrations",
-    image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80",
-    color: "from-rose-400 to-pink-500",
-  },
-  {
-    name: "Royal Theme",
-    description: "Majestic decor with rich velvets, gold accents, and regal elegance",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80",
-    color: "from-amber-400 to-yellow-500",
-  },
-  {
+ {
     name: "Kids Theme",
     description: "Colorful, playful setups with cartoon characters and fun elements",
     image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80",
@@ -67,7 +55,7 @@ export function Themes() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className={index === 0 ? "lg:col-span-2" : ""}
+     
             >
               <Card className="group h-full overflow-hidden border-border/50 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300">
                 <div className="relative aspect-[16/10] overflow-hidden">

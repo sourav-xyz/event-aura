@@ -89,13 +89,17 @@ function BookingForm() {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    if (!searchParams) return
-    
     const packageParam = searchParams.get('package')
-    if (packageParam) {
-      setFormData(prev => ({ ...prev, packageType: packageParam }))
-    }
     const servicesParam = searchParams.get('services')
+
+    if (packageParam) {
+      // Map package names to match packageOptions values
+      const validPackages = ['Silver', 'Gold', 'Premium', 'Custom']
+      if (validPackages.includes(packageParam)) {
+        setFormData(prev => ({ ...prev, packageType: packageParam }))
+      }
+    }
+    
     if (servicesParam) {
       setFormData(prev => ({ ...prev, customServices: servicesParam.split(',') }))
     }
@@ -182,7 +186,7 @@ function BookingForm() {
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}  
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
           className="text-center mb-16"

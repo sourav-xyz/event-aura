@@ -65,11 +65,12 @@ export const updateAvatar = async (req, res) => {
 // @access  Private
 export const getDashboard = async (req, res) => {
   try {
+    console.log('Fetching dashboard for user:', req.user._id);
     const orders = await Order.find({ user: req.user._id })
       .populate('event', 'name slug coverImage')
       .sort({ createdAt: -1 })
       .limit(5);
-
+    console.log('User dashboard orders:', orders);
     const stats = {
       totalOrders: await Order.countDocuments({ user: req.user._id }),
       completedOrders: await Order.countDocuments({ user: req.user._id, status: 'completed' }),
@@ -79,6 +80,8 @@ export const getDashboard = async (req, res) => {
         { $group: { _id: null, total: { $sum: '$pricing.total' } } }
       ]))[0]?.total || 0
     };
+
+    console.log('User dashboard stats:', stats);
 
     res.json({
       success: true,

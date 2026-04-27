@@ -12,6 +12,7 @@ export const protect = async (req, res, next) => {
       const decoded = verifyAccessToken(accessToken);
       if (decoded) {
         const user = await User.findById(decoded.id);
+        console.log('User found in protect middleware:', user);
         if (user) {
           req.user = user;
           return next();
@@ -66,12 +67,15 @@ export const adminOnly = (req, res, next) => {
 
 // Optional auth - attach user if token exists but don't require it
 export const optionalAuth = async (req, res, next) => {
+  console.log("OPTIONAL AUTH HIT");
+  console.log("COOKIES:", req.cookies);
   try {
     const accessToken = req.cookies.accessToken;
     if (accessToken) {
       const decoded = verifyAccessToken(accessToken);
       if (decoded) {
         const user = await User.findById(decoded.id);
+        console.log('User found in optionalAuth middleware:', user);
         if (user) {
           req.user = user;
         }

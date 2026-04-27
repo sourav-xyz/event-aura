@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
+import { api } from "@/lib/api/config"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -107,8 +108,11 @@ export default function AdminBookingsPage() {
         ...(statusFilter !== 'all' && { status: statusFilter }),
       })
       
-      const response = await fetch(`/api/bookings?${params}`)
-      const data = await response.json()
+      const data = await api.get<{
+        success: boolean
+        data: Booking[]
+        pagination: Pagination
+      }>(`/bookings?${params}`)
       
       if (data.success) {
         setBookings(data.data)
@@ -173,16 +177,11 @@ export default function AdminBookingsPage() {
     
     try {
       setActionLoading(true)
-      const response = await fetch(`/api/bookings/${selectedBooking._id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: editStatus,
-          totalAmount: editAmount ? parseFloat(editAmount) : undefined,
-        }),
+      const data = await api.put<{ success: boolean }>(`/bookings/${selectedBooking._id}`, {
+        status: editStatus,
+        totalAmount: editAmount ? parseFloat(editAmount) : undefined,
       })
       
-      const data = await response.json()
       if (data.success) {
         setEditModalOpen(false)
         fetchBookings()
@@ -199,11 +198,8 @@ export default function AdminBookingsPage() {
     
     try {
       setActionLoading(true)
-      const response = await fetch(`/api/bookings/${selectedBooking._id}`, {
-        method: 'DELETE',
-      })
+      const data = await api.delete<{ success: boolean }>(`/bookings/${selectedBooking._id}`)
       
-      const data = await response.json()
       if (data.success) {
         setDeleteModalOpen(false)
         fetchBookings()

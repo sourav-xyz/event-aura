@@ -1,10 +1,20 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Cake, Camera, Music2, UtensilsCrossed, Mic2 } from "lucide-react"
-import Link from "next/link"
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Cake,
+  Camera,
+  Music2,
+  UtensilsCrossed,
+  Mic2,
+  SquarePlay,
+  Flower,
+  Aperture,
+} from "lucide-react";
+
+import Link from "next/link";
 
 const addons = [
   {
@@ -42,7 +52,32 @@ const addons = [
     price: "Starting ₹5,000",
     gradient: "from-green-500 to-emerald-500",
   },
-]
+
+  // NEW ADDONS 👇
+  {
+    icon: SquarePlay,
+    name: "Videography",
+    description: "Cinematic 4K video with drone shots",
+    price: "Starting ₹9,000",
+    gradient: "from-indigo-500 to-blue-500",
+  },
+  {
+    icon: Flower,
+    name: "Flower Wall",
+    description: "Custom floral backdrop for photos",
+    price: "Starting ₹4,500",
+    gradient: "from-pink-400 to-fuchsia-500",
+  },
+  {
+    icon: Aperture,
+    name: "Photo Booth",
+    description: "Instant print booth with props",
+    price: "Starting ₹3,500",
+    gradient: "from-yellow-400 to-orange-500",
+  },
+];
+
+
 
 export function Addons() {
   return (
@@ -55,38 +90,62 @@ export function Addons() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="text-primary font-semibold text-sm uppercase tracking-wider">Add-ons</span>
+          <span className="text-primary font-semibold text-sm uppercase tracking-wider">
+            Add-ons
+          </span>
           <h2 className="text-4xl md:text-5xl font-bold mt-3 mb-4 text-balance">
             Enhance Your <span className="text-gradient">Experience</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto text-pretty">
-            Add these premium services to make your event even more special and memorable.
+            Add these premium services to make your event even more special and
+            memorable.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-          {addons.map((addon, index) => (
-            <motion.div
-              key={addon.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <Card className="group h-full border-border/50 bg-card hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-1 text-center">
-                <CardContent className="p-6">
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${addon.gradient} flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform duration-300`}>
-                    <addon.icon className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-lg font-bold mb-2 text-foreground">{addon.name}</h3>
-                  <p className="text-muted-foreground text-sm mb-3">{addon.description}</p>
-                  <p className="text-primary font-semibold text-sm">{addon.price}</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
+<div className="flex flex-nowrap overflow-x-auto gap-6 w-full pb-8 
+                [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] 
+                snap-x snap-mandatory">  {addons.map((addon, index) => (
+    <motion.div
+      key={addon.name}
+      // flex-shrink-0 zaroori hai taaki cards chote na ho jayein
+      // w-[280px] ya responsive width set karein (e.g., lg:w-[calc(20%-1.25rem)])
+      className="flex-shrink-0 w-[280px] sm:w-[320px] lg:w-[calc(19%-1.25rem)] snap-start"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+    >
+      <Card className="group relative h-full overflow-hidden border-border/40 bg-background/50 backdrop-blur-sm hover:border-primary/50 transition-all duration-500 flex flex-col">
+        {/* Hover Glow Effect */}
+        <div className="absolute -inset-px bg-gradient-to-r from-primary/20 to-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
+        <CardContent className="relative p-6 flex flex-col flex-1 items-start">
+          {/* Icon Section */}
+          <div className={`p-3 rounded-xl bg-gradient-to-br ${addon.gradient} mb-4 shadow-lg shadow-primary/10`}>
+            <addon.icon className="h-6 w-6 text-white" />
+          </div>
+
+          {/* Text Content Section */}
+          <div className="flex-1 w-full">
+            <h3 className="text-xl font-semibold tracking-tight text-foreground">
+              {addon.name}
+            </h3>
+            <p className="text-muted-foreground text-sm mt-2 leading-relaxed text-left line-clamp-3">
+              {addon.description}
+            </p>
+          </div>
+
+          {/* Bottom Price Section */}
+          <div className="mt-6 flex items-center justify-between w-full pt-4 border-t border-border/50">
+            <span className="text-primary font-bold">
+              {addon.price}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  ))}
+</div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -94,11 +153,15 @@ export function Addons() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="text-center mt-12"
         >
-          <Button asChild size="lg" className="gradient-primary text-primary-foreground hover:opacity-90 shadow-lg">
+          <Button
+            asChild
+            size="lg"
+            className="gradient-primary text-primary-foreground hover:opacity-90 shadow-lg"
+          >
             <Link href="#booking">Add to Your Package</Link>
           </Button>
         </motion.div>
       </div>
     </section>
-  )
+  );
 }

@@ -76,6 +76,8 @@ export default function ProfilePage() {
   const fetchDashboard = async () => {
     try {
       const data = await userAPI.getDashboard() as { success: boolean } & DashboardData;
+      console.log(data);
+      
       if (data.success) {
         setDashboard(data);
       }

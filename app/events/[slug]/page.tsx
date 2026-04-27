@@ -16,8 +16,8 @@ import {
   Heart, Cake, Sparkles, Gift, Building, GraduationCap, 
   Baby, Home, Camera, Music, UtensilsCrossed, Mic, Plus, Minus
 } from 'lucide-react';
-import Navbar from '@/components/navbar';
-import Footer from '@/components/footer';
+import { Navbar } from '@/components/navbar';
+import { Footer } from '@/components/footer';
 
 interface Package {
   name: string;

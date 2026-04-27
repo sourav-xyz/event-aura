@@ -49,7 +49,7 @@ app.get('/api/health', (req, res) => {
 
 // Error handlers
 app.use(notFound);
-app.use(errorHandler);
+app.use(errorHandler); 
 
 const PORT = process.env.PORT || 5000;
 

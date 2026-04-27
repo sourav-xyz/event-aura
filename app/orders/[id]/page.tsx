@@ -16,8 +16,8 @@ import {
   Package, CheckCircle, XCircle, AlertCircle, ArrowLeft,
   Star, Sparkles, Download, MessageCircle
 } from 'lucide-react';
-import Navbar from '@/components/navbar';
-import Footer from '@/components/footer';
+import { Navbar } from '@/components/navbar';
+import { Footer } from '@/components/footer';
 
 interface Order {
   _id: string;

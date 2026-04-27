@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 
 const packages = [
+
   {
     name: "Silver",
     subtitle: "Basic Decoration",
@@ -195,7 +196,10 @@ export function Packages() {
                     className={`w-full transition-all duration-300 ${pkg.popular ? "gradient-primary text-primary-foreground hover:opacity-90" : "hover:bg-primary hover:text-primary-foreground"}`}
                     variant={pkg.popular ? "default" : "outline"}
                   >
-                    <Link href={`#booking?package=${pkg.name}`} className="flex items-center justify-center gap-2">
+                    <Link 
+                      href={`?package=${pkg.name}#booking`} 
+                      className="flex items-center justify-center gap-2"
+                    >
                       Choose {pkg.name}
                       <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                     </Link>
@@ -389,7 +393,7 @@ export function Packages() {
                 disabled={selectedServices.length === 0}
               >
                 <Link 
-                  href={`#booking?package=Custom&services=${getSelectedServiceNames().join(',')}`}
+                  href={`?package=Custom&services=${getSelectedServiceNames().join(',')}#booking`}
                   onClick={() => setCustomModalOpen(false)}
                 >
                   Continue to Booking

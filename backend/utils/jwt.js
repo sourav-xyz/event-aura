@@ -35,22 +35,35 @@ export const verifyRefreshToken = (token) => {
 export const setTokenCookies = (res, accessToken, refreshToken) => {
   const isProduction = process.env.NODE_ENV === 'production';
 
-  res.cookie('accessToken', accessToken, {
+  const cookieOptions = {
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? 'strict' : 'lax',
-    maxAge: 15 * 60 * 1000 // 15 minutes
+    path: '/',
+  };
+
+  res.cookie('accessToken', accessToken, {
+    ...cookieOptions,
+    maxAge: 15 * 60 * 1000,
   });
 
   res.cookie('refreshToken', refreshToken, {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    ...cookieOptions,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
 
 export const clearTokenCookies = (res) => {
-  res.cookie('accessToken', '', { httpOnly: true, expires: new Date(0) });
-  res.cookie('refreshToken', '', { httpOnly: true, expires: new Date(0) });
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  const cookieOptions = {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'strict' : 'lax',
+    path: '/',
+    expires: new Date(0),
+  };
+
+  res.cookie('accessToken', '', cookieOptions);
+  res.cookie('refreshToken', '', cookieOptions);
 };

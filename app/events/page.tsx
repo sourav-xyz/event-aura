@@ -205,7 +205,7 @@ export default function EventsPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <main className="pt-24 pb-16">
+      <main className="pt-14 pb-16">
         {/* Hero Section */}
         <section className="relative py-16 px-4 bg-gradient-to-br from-primary/10 via-secondary/5 to-background">
           <div className="max-w-6xl mx-auto text-center">

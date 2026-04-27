@@ -35,6 +35,7 @@ export const createOrder = async (req, res) => {
     }
 
     // Create order - event is optional
+    console.log("fyffvgvgjvjgvgvg", req.user);
     const order = await Order.create({
       user: req.user ? req.user._id : undefined,
       event: eventId || undefined,
@@ -44,7 +45,7 @@ export const createOrder = async (req, res) => {
       addonsSelected,
       eventDetails,
       contactInfo: {
-        name: contactInfo?.name || (req.user?.name || 'Guest'),
+        name: contactInfo?.name || (req.user?.name || 'Guest'), 
         email: contactInfo?.email || (req.user?.email || ''),
         phone: contactInfo?.phone || (req.user?.phone || ''),
         alternatePhone: contactInfo?.alternatePhone
