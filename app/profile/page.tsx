@@ -71,6 +71,7 @@ export default function ProfilePage() {
       });
       fetchDashboard();
     }
+    console.log(user);
   }, [user]);
 
   const fetchDashboard = async () => {
@@ -369,7 +370,7 @@ export default function ProfilePage() {
                                     {getStatusIcon(order.status)}
                                   </div>
                                   <div>
-                                    <p className="font-semibold">{order.event.name}</p>
+                                    <p className="font-semibold">{order.event?.name || "Event"}</p>
                                     <p className="text-sm text-muted-foreground">#{order.orderNumber}</p>
                                   </div>
                                 </div>

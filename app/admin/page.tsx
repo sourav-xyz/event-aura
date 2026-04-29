@@ -52,6 +52,8 @@ export default function AdminDashboard() {
 
       const s = response.stats;
 
+      console.log("Parsed stats:", s);  
+
       setStats({
         totalOrders: s.total,
         totalRevenue: s.totalRevenue,

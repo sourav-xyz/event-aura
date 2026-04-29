@@ -18,7 +18,7 @@ export const createOrder = async (req, res) => {
       pricing
     } = req.body;
 
-    console.log('Create order request body:', req.body);
+    console.log('Create order requīest body:', req.body);
 
     // Event is optional - try to find if provided, but don't fail if not found
     let event = null;
@@ -35,7 +35,7 @@ export const createOrder = async (req, res) => {
     }
 
     // Create order - event is optional
-    console.log("fyffvgvgjvjgvgvg", req.user);
+    console.log("Creating order, req.user:", req.user);
     const order = await Order.create({
       user: req.user ? req.user._id : undefined,
       event: eventId || undefined,
@@ -54,7 +54,7 @@ export const createOrder = async (req, res) => {
       status: 'pending',
       statusHistory: [{ status: 'pending', updatedAt: new Date() }]
     });
-    console.log('Order created:', order);
+    console.log('Order created:', { id: order._id, user: order.user, contactEmail: order.contactInfo?.email });
     // Send confirmation email
     const populatedOrder = await Order.findById(order._id)
       .populate('event', 'name')
@@ -403,7 +403,7 @@ export const updateOrderStatus = async (req, res) => {
     // Send status update email
     const populatedOrder = await Order.findById(order._id).populate('event', 'name');
     const emailContent = emailTemplates.orderStatusUpdate(
-      { ...order.toObject(), eventName: populatedOrder.event.name },
+      { ...order.toObject(), eventName: populatedOrder?.event?.name || 'Event' },
       status.charAt(0).toUpperCase() + status.slice(1)
     );
 

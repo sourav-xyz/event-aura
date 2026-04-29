@@ -7,14 +7,17 @@ export const protect = async (req, res, next) => {
     let accessToken = req.cookies.accessToken;
     const refreshToken = req.cookies.refreshToken;
 
+    // console.log("PROTECT MIDDLEWARE HIT",req.cookies, "Access Token:", accessToken, "Refresh Token:", refreshToken);
+
     // Try to verify access token
     if (accessToken) {
       const decoded = verifyAccessToken(accessToken);
       if (decoded) {
         const user = await User.findById(decoded.id);
-        console.log('User found in protect middleware:', user);
+        // console.log('User found in protect middleware:', user);
         if (user) {
           req.user = user;
+          // console.log("req.user:", req.user);
           return next();
         }
       }
@@ -67,15 +70,17 @@ export const adminOnly = (req, res, next) => {
 
 // Optional auth - attach user if token exists but don't require it
 export const optionalAuth = async (req, res, next) => {
-  console.log("OPTIONAL AUTH HIT");
-  console.log("COOKIES:", req.cookies);
+  // console.log("OPTIONAL AUTH HIT");
+  // console.log("COOKIES:", req.cookies);
   try {
     const accessToken = req.cookies.accessToken;
+    // console.log("Access Token in optionalAuth:", accessToken);
     if (accessToken) {
       const decoded = verifyAccessToken(accessToken);
+      // console.log("Decoded token in optionalAuth:", decoded);
       if (decoded) {
         const user = await User.findById(decoded.id);
-        console.log('User found in optionalAuth middleware:', user);
+        // console.log('User found in optionalAuth middleware:', user);
         if (user) {
           req.user = user;
         }
@@ -83,6 +88,6 @@ export const optionalAuth = async (req, res, next) => {
     }
     next();
   } catch (error) {
-    next();
+    // console.log("auth.js.....",error);
   }
 };

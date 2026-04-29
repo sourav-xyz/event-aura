@@ -8,7 +8,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { EventCardSkeleton, CategoryCardSkeleton } from "@/components/skeletons";
+import {
+  EventCardSkeleton,
+  CategoryCardSkeleton,
+} from "@/components/skeletons";
 import { useToast } from "@/context/toast-context";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -74,7 +77,12 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Home,
 };
 
-type SortOption = "name-asc" | "name-desc" | "price-asc" | "price-desc" | "rating-desc";
+type SortOption =
+  | "name-asc"
+  | "name-desc"
+  | "price-asc"
+  | "price-desc"
+  | "rating-desc";
 type ViewMode = "grid" | "list";
 
 export default function EventsPage() {
@@ -88,24 +96,38 @@ export default function EventsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [showFilters, setShowFilters] = useState(false);
   const { showToast } = useToast();
+  const [debouncedQuery, setDebouncedQuery] = useState("");
 
   useEffect(() => {
     fetchData();
+    fetchEvents(); // initial load
   }, []);
 
   useEffect(() => {
-    fetchEvents();
+    if (selectedCategory) {
+      fetchEvents();
+    }
   }, [selectedCategory]);
+
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const fetchData = async () => {
     try {
-      const catData = (await categoryAPI.getAll()) as { success: boolean; categories: Category[] };
+      const catData = await categoryAPI.getAll();
       if (catData.success) {
         setCategories(catData.categories);
       }
     } catch (error) {
-      console.error("Failed to fetch categories:", error);
       showToast("Failed to load categories", "error");
+    } finally {
+      setLoading(false); // ✅ add this
     }
   };
 
@@ -116,7 +138,10 @@ export default function EventsPage() {
       if (selectedCategory !== "all") {
         params.category = selectedCategory;
       }
-      const eventData = (await eventAPI.getAll(params)) as { success: boolean; events: Event[] };
+      const eventData = (await eventAPI.getAll(params)) as {
+        success: boolean;
+        events: Event[];
+      };
       if (eventData.success) {
         setEvents(eventData.events);
       }
@@ -144,13 +169,14 @@ export default function EventsPage() {
         (event) =>
           event.name.toLowerCase().includes(query) ||
           event.shortDescription?.toLowerCase().includes(query) ||
-          event.category?.name.toLowerCase().includes(query)
+          event.category?.name.toLowerCase().includes(query),
       );
     }
 
     // Price range filter
     result = result.filter(
-      (event) => event.basePrice >= priceRange[0] && event.basePrice <= priceRange[1]
+      (event) =>
+        event.basePrice >= priceRange[0] && event.basePrice <= priceRange[1],
     );
 
     // Sort
@@ -168,7 +194,9 @@ export default function EventsPage() {
         result.sort((a, b) => b.basePrice - a.basePrice);
         break;
       case "rating-desc":
-        result.sort((a, b) => (b.rating?.average || 0) - (a.rating?.average || 0));
+        result.sort(
+          (a, b) => (b.rating?.average || 0) - (a.rating?.average || 0),
+        );
         break;
     }
 
@@ -199,7 +227,11 @@ export default function EventsPage() {
   };
 
   const hasActiveFilters =
-    searchQuery || selectedCategory !== "all" || sortBy !== "name-asc" || priceRange[0] !== 0 || priceRange[1] !== 100000;
+    searchQuery ||
+    selectedCategory !== "all" ||
+    sortBy !== "name-asc" ||
+    priceRange[0] !== 0 ||
+    priceRange[1] !== 100000;
 
   return (
     <div className="min-h-screen bg-background">
@@ -218,11 +250,12 @@ export default function EventsPage() {
                 <Sparkles className="h-3 w-3 mr-1" /> Premium Events
               </Badge>
               <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4 text-balance">
-                Explore Our <span className="text-gradient">Event Categories</span>
+                Explore Our{" "}
+                <span className="text-gradient">Event Categories</span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-                From intimate gatherings to grand celebrations, find the perfect event package for
-                your special moments.
+                From intimate gatherings to grand celebrations, find the perfect
+                event package for your special moments.
               </p>
 
               {/* Search Bar */}
@@ -259,7 +292,11 @@ export default function EventsPage() {
                   variant={selectedCategory === "all" ? "default" : "outline"}
                   size="sm"
                   onClick={() => setSelectedCategory("all")}
-                  className={selectedCategory === "all" ? "gradient-primary shrink-0" : "shrink-0"}
+                  className={
+                    selectedCategory === "all"
+                      ? "gradient-primary shrink-0"
+                      : "shrink-0"
+                  }
                 >
                   All Events
                 </Button>
@@ -268,7 +305,9 @@ export default function EventsPage() {
                   return (
                     <Button
                       key={cat._id}
-                      variant={selectedCategory === cat.slug ? "default" : "outline"}
+                      variant={
+                        selectedCategory === cat.slug ? "default" : "outline"
+                      }
                       size="sm"
                       onClick={() => setSelectedCategory(cat.slug)}
                       className={`shrink-0 ${selectedCategory === cat.slug ? "gradient-primary" : ""}`}
@@ -320,7 +359,8 @@ export default function EventsPage() {
                         key={range.label}
                         onClick={() => setPriceRange(range.value)}
                         className={
-                          priceRange[0] === range.value[0] && priceRange[1] === range.value[1]
+                          priceRange[0] === range.value[0] &&
+                          priceRange[1] === range.value[1]
                             ? "bg-primary/10"
                             : ""
                         }
@@ -345,7 +385,9 @@ export default function EventsPage() {
                       <DropdownMenuItem
                         key={option.value}
                         onClick={() => setSortBy(option.value as SortOption)}
-                        className={sortBy === option.value ? "bg-primary/10" : ""}
+                        className={
+                          sortBy === option.value ? "bg-primary/10" : ""
+                        }
                       >
                         <option.icon className="h-4 w-4 mr-2" />
                         {option.label}
@@ -376,7 +418,12 @@ export default function EventsPage() {
 
                 {/* Clear Filters */}
                 {hasActiveFilters && (
-                  <Button variant="ghost" size="sm" onClick={clearFilters} className="text-destructive">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="text-destructive"
+                  >
                     <X className="h-4 w-4 mr-1" />
                     Clear
                   </Button>
@@ -387,7 +434,9 @@ export default function EventsPage() {
             {/* Active Filters Display */}
             {hasActiveFilters && (
               <div className="flex items-center gap-2 mt-4 flex-wrap">
-                <span className="text-sm text-muted-foreground">Active filters:</span>
+                <span className="text-sm text-muted-foreground">
+                  Active filters:
+                </span>
                 {selectedCategory !== "all" && (
                   <Badge variant="secondary" className="gap-1">
                     {categories.find((c) => c.slug === selectedCategory)?.name}
@@ -398,7 +447,8 @@ export default function EventsPage() {
                 )}
                 {priceRange[0] !== 0 || priceRange[1] !== 100000 ? (
                   <Badge variant="secondary" className="gap-1">
-                    ₹{priceRange[0].toLocaleString()} - ₹{priceRange[1].toLocaleString()}
+                    ₹{priceRange[0].toLocaleString()} - ₹
+                    {priceRange[1].toLocaleString()}
                     <button onClick={() => setPriceRange([0, 100000])}>
                       <X className="h-3 w-3" />
                     </button>
@@ -421,7 +471,9 @@ export default function EventsPage() {
         <section className="py-4 px-4">
           <div className="max-w-6xl mx-auto">
             <p className="text-sm text-muted-foreground">
-              {loading ? "Loading..." : `Showing ${filteredAndSortedEvents.length} events`}
+              {loading
+                ? "Loading..."
+                : `Showing ${filteredAndSortedEvents.length} events`}
             </p>
           </div>
         </section>
@@ -472,7 +524,10 @@ export default function EventsPage() {
                                   <div className="relative w-full md:w-48 h-48 md:h-auto bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center shrink-0">
                                     <div
                                       className="w-16 h-16 rounded-full flex items-center justify-center"
-                                      style={{ backgroundColor: event.category?.color || "#9333ea" }}
+                                      style={{
+                                        backgroundColor:
+                                          event.category?.color || "#9333ea",
+                                      }}
                                     >
                                       <Icon className="h-8 w-8 text-white" />
                                     </div>
@@ -509,13 +564,16 @@ export default function EventsPage() {
                                           {event.rating.count > 0 && (
                                             <span className="flex items-center gap-1">
                                               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                              {event.rating.average.toFixed(1)} ({event.rating.count})
+                                              {event.rating.average.toFixed(1)}{" "}
+                                              ({event.rating.count})
                                             </span>
                                           )}
                                         </div>
                                       </div>
                                       <div className="text-right shrink-0">
-                                        <p className="text-xs text-muted-foreground">Starting from</p>
+                                        <p className="text-xs text-muted-foreground">
+                                          Starting from
+                                        </p>
                                         <p className="text-2xl font-bold text-primary">
                                           ₹{event.basePrice.toLocaleString()}
                                         </p>
@@ -545,7 +603,10 @@ export default function EventsPage() {
                             <div className="relative h-48 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
                               <div
                                 className="w-20 h-20 rounded-full flex items-center justify-center transition-transform group-hover:scale-110"
-                                style={{ backgroundColor: event.category?.color || "#9333ea" }}
+                                style={{
+                                  backgroundColor:
+                                    event.category?.color || "#9333ea",
+                                }}
                               >
                                 <Icon className="h-10 w-10 text-white" />
                               </div>
@@ -582,7 +643,9 @@ export default function EventsPage() {
                               </p>
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <p className="text-xs text-muted-foreground">Starting from</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Starting from
+                                  </p>
                                   <p className="text-lg font-bold text-primary">
                                     ₹{event.basePrice.toLocaleString()}
                                   </p>
@@ -607,7 +670,10 @@ export default function EventsPage() {
                 <p className="text-muted-foreground mb-4">
                   Try adjusting your filters or search query
                 </p>
-                <Button onClick={clearFilters} className="gradient-primary text-primary-foreground">
+                <Button
+                  onClick={clearFilters}
+                  className="gradient-primary text-primary-foreground"
+                >
                   Clear All Filters
                 </Button>
               </div>
@@ -618,7 +684,9 @@ export default function EventsPage() {
         {/* Categories Grid */}
         <section className="py-12 px-4 bg-muted/30">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl font-serif font-bold mb-8 text-center">Browse by Category</h2>
+            <h2 className="text-2xl font-serif font-bold mb-8 text-center">
+              Browse by Category
+            </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {categories.map((cat, index) => {
                 const Icon = getIcon(cat.icon);
@@ -640,7 +708,10 @@ export default function EventsPage() {
                         className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center transition-transform group-hover:scale-110"
                         style={{ backgroundColor: `${cat.color}20` }}
                       >
-                        <Icon className="h-6 w-6" style={{ color: cat.color }} />
+                        <Icon
+                          className="h-6 w-6"
+                          style={{ color: cat.color }}
+                        />
                       </div>
                       <p className="font-medium text-sm">{cat.name}</p>
                     </button>

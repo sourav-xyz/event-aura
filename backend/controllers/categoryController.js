@@ -7,7 +7,7 @@ import Event from '../models/Event.js';
 export const getCategories = async (req, res) => {
   try {
     const categories = await Category.find({ isActive: true }).sort('order');
-    
+    console.log('Fetched categories:', categories);
     res.json({
       success: true,
       count: categories.length,

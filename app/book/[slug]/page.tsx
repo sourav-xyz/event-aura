@@ -56,25 +56,22 @@ export default function BookingPage() {
   });
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login?redirect=/book/' + params.slug);
-      return;
-    }
+  if (!authLoading && !user) {
+    router.push('/login?redirect=/book/' + params.slug);
+    return;
+  }
 
-    // Load booking data from session storage
-    const storedData = sessionStorage.getItem('bookingData');
-    if (storedData) {
-      const data = JSON.parse(storedData) as BookingData;
-      if (data.eventSlug === params.slug) {
-        setBookingData(data);
-        fetchEvent(data.eventId);
-      } else {
-        router.push('/events/' + params.slug);
-      }
-    } else {
-      router.push('/events/' + params.slug);
-    }
-  }, [params.slug, user, authLoading, router]);
+  if (!user) return; // 🔥 IMPORTANT
+
+  console.log("USER:", user);
+
+  const storedData = sessionStorage.getItem('bookingData');
+  if (storedData) {
+    const data = JSON.parse(storedData);
+    setBookingData(data);
+    fetchEvent(data.eventId);
+  }
+}, [user, authLoading]);
 
   useEffect(() => {
     if (user) {
@@ -131,6 +128,9 @@ export default function BookingPage() {
       };
 
       const response = await orderAPI.create(orderData) as { success: boolean; order: { _id: string } };
+
+      console.log("FULL RESPONSE:", response);
+
       if (response.success) {
         sessionStorage.removeItem('bookingData');
         router.push('/orders/' + response.order._id + '?success=true');

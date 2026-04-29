@@ -151,6 +151,7 @@ function BookingForm() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // 🔥 ADD THIS LINE
         body: JSON.stringify(transformedData),
       })
       console.log("API response status:", response);

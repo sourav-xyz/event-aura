@@ -65,12 +65,12 @@ export const updateAvatar = async (req, res) => {
 // @access  Private
 export const getDashboard = async (req, res) => {
   try {
-    console.log('Fetching dashboard for user:', req.user._id);
+    // console.log('Fetching dashboard for user:', req.user._id);
     const orders = await Order.find({ user: req.user._id })
       .populate('event', 'name slug coverImage')
       .sort({ createdAt: -1 })
       .limit(5);
-    console.log('User dashboard orders:', orders);
+    // console.log('User dashboard orders:', orders);
     const stats = {
       totalOrders: await Order.countDocuments({ user: req.user._id }),
       completedOrders: await Order.countDocuments({ user: req.user._id, status: 'completed' }),
@@ -81,12 +81,25 @@ export const getDashboard = async (req, res) => {
       ]))[0]?.total || 0
     };
 
-    console.log('User dashboard stats:', stats);
+    // console.log('User dashboard stats:', stats);
 
     res.json({
       success: true,
+      // provide `stats` object expected by frontend
       stats,
-      recentOrders: orders
+      // keep backward-compatible root fields
+      ...stats,
+      recentOrders: orders,
+      // also provide a `data` wrapper expected by some frontend callers
+      data: {
+        stats,
+        totalOrders: stats.totalOrders,
+        completedOrders: stats.completedOrders,
+        pendingOrders: stats.pendingOrders,
+        totalSpent: stats.totalSpent,
+        recentOrders: orders,
+        upcomingEvents: []
+      }
     });
   } catch (error) {
     console.error('Get dashboard error:', error);
@@ -106,6 +119,8 @@ export const getAllUsers = async (req, res) => {
   try {
     const { search, role } = req.query;
 
+    console.log('Admin fetching users with search:', search, 'and role:', role);
+
     let query = {};
 
     if (search) {
@@ -121,6 +136,8 @@ export const getAllUsers = async (req, res) => {
     }
 
     const users = await User.find(query).sort({ createdAt: -1 });
+
+    console.log('Admin found users:', users);
 
     // Get order counts for each user
     const usersWithStats = await Promise.all(
