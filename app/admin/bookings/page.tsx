@@ -113,6 +113,8 @@ export default function AdminBookingsPage() {
         data: Booking[]
         pagination: Pagination
       }>(`/bookings?${params}`)
+
+      console.log(data);
       
       if (data.success) {
         setBookings(data.data)

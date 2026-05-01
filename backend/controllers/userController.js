@@ -90,6 +90,8 @@ export const getDashboard = async (req, res) => {
       // keep backward-compatible root fields
       ...stats,
       recentOrders: orders,
+
+      bala:"egdyhefyhvghefcv",
       // also provide a `data` wrapper expected by some frontend callers
       data: {
         stats,
@@ -119,13 +121,15 @@ export const getAllUsers = async (req, res) => {
   try {
     const { search, role } = req.query;
 
+    console.log('hiiiiiiiiiiiiiiiiiiiiiii');
+
     console.log('Admin fetching users with search:', search, 'and role:', role);
 
     let query = {};
 
     if (search) {
       query.$or = [
-        { name: { $regex: search, $options: 'i' } },
+        { name: { $regex: search, $options: 'i' } },  
         { email: { $regex: search, $options: 'i' } },
         { phone: { $regex: search, $options: 'i' } }
       ];
@@ -318,6 +322,8 @@ export const getAdminDashboard = async (req, res) => {
     const totalOrders = await Order.countDocuments();
     const pendingOrders = await Order.countDocuments({ status: 'pending' });
     const completedOrders = await Order.countDocuments({ status: 'completed' });
+
+    console.log("hiiii--------");
 
     const totalRevenue = (await Order.aggregate([
       { $match: { status: { $ne: 'cancelled' } } },

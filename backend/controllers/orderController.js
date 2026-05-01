@@ -1,12 +1,13 @@
-import Order from '../models/Order.js';
-import Event from '../models/Event.js';
-import { sendEmail, emailTemplates } from '../utils/email.js';
+import Order from "../models/Order.js";
+import Event from "../models/Event.js";
+import { sendEmail, emailTemplates } from "../utils/email.js";
+import User from "../models/User.js";
 
 // @desc    Create new order
 // @route   POST /api/orders
 // @access  Public (guests can book, or authenticated users)
 export const createOrder = async (req, res) => {
-  console.log('Create order request received');
+  console.log("Create order request received");
   try {
     const {
       event: eventId,
@@ -15,17 +16,17 @@ export const createOrder = async (req, res) => {
       addonsSelected,
       eventDetails,
       contactInfo,
-      pricing
+      pricing,
     } = req.body;
 
-    console.log('Create order requīest body:', req.body);
+    console.log("Create order requīest body:", req.body);
 
     // Event is optional - try to find if provided, but don't fail if not found
     let event = null;
     let categoryId = null;
-    
+
     if (eventId) {
-      event = await Event.findById(eventId).populate('category');
+      event = await Event.findById(eventId).populate("category");
       if (event) {
         categoryId = event.category._id;
         // Update event booking count
@@ -45,54 +46,58 @@ export const createOrder = async (req, res) => {
       addonsSelected,
       eventDetails,
       contactInfo: {
-        name: contactInfo?.name || (req.user?.name || 'Guest'), 
-        email: contactInfo?.email || (req.user?.email || ''),
-        phone: contactInfo?.phone || (req.user?.phone || ''),
-        alternatePhone: contactInfo?.alternatePhone
+        name: contactInfo?.name || req.user?.name || "Guest",
+        email: contactInfo?.email || req.user?.email || "",
+        phone: contactInfo?.phone || req.user?.phone || "",
+        alternatePhone: contactInfo?.alternatePhone,
       },
       pricing,
-      status: 'pending',
-      statusHistory: [{ status: 'pending', updatedAt: new Date() }]
+      status: "pending",
+      statusHistory: [{ status: "pending", updatedAt: new Date() }],
     });
-    console.log('Order created:', { id: order._id, user: order.user, contactEmail: order.contactInfo?.email });
+    console.log("Order created:", {
+      id: order._id,
+      user: order.user,
+      contactEmail: order.contactInfo?.email,
+    });
     // Send confirmation email
     const populatedOrder = await Order.findById(order._id)
-      .populate('event', 'name')
-      .populate('user', 'email');
+      .populate("event", "name")
+      .populate("user", "email");
 
-      console.log('Populated order for email:', populatedOrder);
+    console.log("Populated order for email:", populatedOrder);
 
     const emailContent = emailTemplates.orderConfirmation({
       ...order.toObject(),
-      eventName: event?.name || 'Event Booking'
+      eventName: event?.name || "Event Booking",
     });
 
     await sendEmail({
       to: order.contactInfo.email,
       subject: emailContent.subject,
-      html: emailContent.html
+      html: emailContent.html,
     });
 
     res.status(201).json({
       success: true,
-      message: 'Booking created successfully',
+      message: "Booking created successfully",
       data: {
         _id: populatedOrder._id,
         orderNumber: populatedOrder.orderNumber,
-        trackingId: populatedOrder.orderNumber,  // Use orderNumber as trackingId
+        trackingId: populatedOrder.orderNumber, // Use orderNumber as trackingId
         status: populatedOrder.status,
         contactInfo: populatedOrder.contactInfo,
         eventDetails: populatedOrder.eventDetails,
         pricing: populatedOrder.pricing,
-        createdAt: populatedOrder.createdAt
+        createdAt: populatedOrder.createdAt,
       },
-      order: populatedOrder
+      order: populatedOrder,
     });
   } catch (error) {
-    console.error('Create order error:', error);
+    console.error("Create order error:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to create order'
+      message: error.message || "Failed to create order",
     });
   }
 };
@@ -103,20 +108,20 @@ export const createOrder = async (req, res) => {
 export const getMyOrders = async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user._id })
-      .populate('event', 'name slug coverImage')
-      .populate('category', 'name')
+      .populate("event", "name slug coverImage")
+      .populate("category", "name")
       .sort({ createdAt: -1 });
 
     res.json({
       success: true,
       count: orders.length,
-      orders
+      orders,
     });
   } catch (error) {
-    console.error('Get my orders error:', error);
+    console.error("Get my orders error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch orders'
+      message: "Failed to fetch orders",
     });
   }
 };
@@ -127,34 +132,37 @@ export const getMyOrders = async (req, res) => {
 export const getOrder = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
-      .populate('event', 'name slug coverImage packages themes addons')
-      .populate('category', 'name')
-      .populate('user', 'name email phone');
+      .populate("event", "name slug coverImage packages themes addons")
+      .populate("category", "name")
+      .populate("user", "name email phone");
 
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: 'Order not found'
+        message: "Order not found",
       });
     }
 
     // Check if user owns the order or is admin
-    if (order.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    if (
+      order.user._id.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to view this order'
+        message: "Not authorized to view this order",
       });
     }
 
     res.json({
       success: true,
-      order
+      order,
     });
   } catch (error) {
-    console.error('Get order error:', error);
+    console.error("Get order error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch order'
+      message: "Failed to fetch order",
     });
   }
 };
@@ -169,54 +177,60 @@ export const cancelOrder = async (req, res) => {
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: 'Order not found'
+        message: "Order not found",
       });
     }
 
     // Check if user owns the order
-    if (order.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    if (
+      order.user.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to cancel this order'
+        message: "Not authorized to cancel this order",
       });
     }
 
     // Check if order can be cancelled
-    if (['completed', 'cancelled'].includes(order.status)) {
+    if (["completed", "cancelled"].includes(order.status)) {
       return res.status(400).json({
         success: false,
-        message: 'This order cannot be cancelled'
+        message: "This order cannot be cancelled",
       });
     }
 
-    order.status = 'cancelled';
+    order.status = "cancelled";
     order.cancelReason = req.body.reason;
     order.cancelledAt = new Date();
     await order.save();
 
     // Send cancellation email
-    const populatedOrder = await Order.findById(order._id).populate('event', 'name');
+    const populatedOrder = await Order.findById(order._id).populate(
+      "event",
+      "name",
+    );
     const emailContent = emailTemplates.orderStatusUpdate(
       { ...order.toObject(), eventName: populatedOrder.event.name },
-      'Cancelled'
+      "Cancelled",
     );
 
     await sendEmail({
       to: order.contactInfo.email,
       subject: emailContent.subject,
-      html: emailContent.html
+      html: emailContent.html,
     });
 
     res.json({
       success: true,
-      message: 'Order cancelled successfully',
-      order
+      message: "Order cancelled successfully",
+      order,
     });
   } catch (error) {
-    console.error('Cancel order error:', error);
+    console.error("Cancel order error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to cancel order'
+      message: "Failed to cancel order",
     });
   }
 };
@@ -232,28 +246,28 @@ export const addRating = async (req, res) => {
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: 'Order not found'
+        message: "Order not found",
       });
     }
 
     if (order.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to rate this order'
+        message: "Not authorized to rate this order",
       });
     }
 
-    if (order.status !== 'completed') {
+    if (order.status !== "completed") {
       return res.status(400).json({
         success: false,
-        message: 'Can only rate completed orders'
+        message: "Can only rate completed orders",
       });
     }
 
     order.rating = {
       score,
       review,
-      ratedAt: new Date()
+      ratedAt: new Date(),
     };
     await order.save();
 
@@ -262,27 +276,27 @@ export const addRating = async (req, res) => {
     if (event) {
       const orders = await Order.find({
         event: event._id,
-        'rating.score': { $exists: true }
+        "rating.score": { $exists: true },
       });
-      
+
       const totalRating = orders.reduce((sum, o) => sum + o.rating.score, 0);
       event.rating = {
         average: totalRating / orders.length,
-        count: orders.length
+        count: orders.length,
       };
       await event.save();
     }
 
     res.json({
       success: true,
-      message: 'Rating added successfully',
-      order
+      message: "Rating added successfully",
+      order,
     });
   } catch (error) {
-    console.error('Add rating error:', error);
+    console.error("Add rating error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to add rating'
+      message: "Failed to add rating",
     });
   }
 };
@@ -294,11 +308,20 @@ export const addRating = async (req, res) => {
 // @access  Private/Admin
 export const getAllOrders = async (req, res) => {
   try {
-    const { status, startDate, endDate, search, page = 1, limit = 10 } = req.query;
+    const {
+      status,
+      startDate,
+      endDate,
+      search,
+      page = 1,
+      limit = 10,
+    } = req.query;
 
     let query = {};
 
-    if (status && status !== 'all') {
+    console.log("Admin get all orders query:", req.query);
+
+    if (status && status !== "all") {
       query.status = status;
     }
 
@@ -310,10 +333,10 @@ export const getAllOrders = async (req, res) => {
 
     if (search) {
       query.$or = [
-        { orderNumber: { $regex: search, $options: 'i' } },
-        { 'contactInfo.name': { $regex: search, $options: 'i' } },
-        { 'contactInfo.email': { $regex: search, $options: 'i' } },
-        { 'contactInfo.phone': { $regex: search, $options: 'i' } }
+        { orderNumber: { $regex: search, $options: "i" } },
+        { "contactInfo.name": { $regex: search, $options: "i" } },
+        { "contactInfo.email": { $regex: search, $options: "i" } },
+        { "contactInfo.phone": { $regex: search, $options: "i" } },
       ];
     }
 
@@ -325,34 +348,43 @@ export const getAllOrders = async (req, res) => {
     // Get total count for pagination
     const total = await Order.countDocuments(query);
     const totalPages = Math.ceil(total / limitNum);
+    const totalUsers = await User.countDocuments();
 
     const orders = await Order.find(query)
-      .populate('event', 'name slug')
-      .populate('category', 'name')
-      .populate('user', 'name email phone')
+      .populate("event", "name slug")
+      .populate("category", "name")
+      .populate("user", "name email phone")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limitNum);
 
-    console.log('First order:', orders[0] ? {
-      id: orders[0]._id,
-      contactInfo: orders[0].contactInfo,
-      pricing: orders[0].pricing,
-      eventDetails: orders[0].eventDetails
-    } : 'No orders');
+    console.log("orderssss", orders);
+    console.log(
+      "First order:",
+      orders[0]
+        ? {
+            id: orders[0]._id,
+            contactInfo: orders[0].contactInfo,
+            pricing: orders[0].pricing,
+            eventDetails: orders[0].eventDetails,
+          }
+        : "No orders",
+    );
 
     // Calculate stats
     const stats = {
       total: orders.length,
-      pending: orders.filter(o => o.status === 'pending').length,
-      confirmed: orders.filter(o => o.status === 'confirmed').length,
-      inProgress: orders.filter(o => o.status === 'in-progress').length,
-      completed: orders.filter(o => o.status === 'completed').length,
-      cancelled: orders.filter(o => o.status === 'cancelled').length,
+      pending: orders.filter((o) => o.status === "pending").length,
+      confirmed: orders.filter((o) => o.status === "confirmed").length,
+      inProgress: orders.filter((o) => o.status === "in-progress").length,
+      completed: orders.filter((o) => o.status === "completed").length,
+      cancelled: orders.filter((o) => o.status === "cancelled").length,
       totalRevenue: orders
-        .filter(o => o.status !== 'cancelled')
-        .reduce((sum, o) => sum + (o.pricing?.total || 0), 0)
+        .filter((o) => o.status !== "cancelled")
+        .reduce((sum, o) => sum + (o.pricing?.total || 0), 0),
     };
+
+    console.log("---Order stats:---", stats);
 
     res.json({
       success: true,
@@ -363,15 +395,16 @@ export const getAllOrders = async (req, res) => {
       stats,
       data: {
         orders,
-        totalPages
+        totalPages,
       },
-      orders
+      totalUsers,
+      orders,
     });
   } catch (error) {
-    console.error('Get all orders error:', error);
+    console.error("Get all orders error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch orders'
+      message: "Failed to fetch orders",
     });
   }
 };
@@ -387,7 +420,7 @@ export const updateOrderStatus = async (req, res) => {
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: 'Order not found'
+        message: "Order not found",
       });
     }
 
@@ -396,33 +429,39 @@ export const updateOrderStatus = async (req, res) => {
       status,
       note,
       updatedBy: req.user._id,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
     await order.save();
 
     // Send status update email
-    const populatedOrder = await Order.findById(order._id).populate('event', 'name');
+    const populatedOrder = await Order.findById(order._id).populate(
+      "event",
+      "name",
+    );
     const emailContent = emailTemplates.orderStatusUpdate(
-      { ...order.toObject(), eventName: populatedOrder?.event?.name || 'Event' },
-      status.charAt(0).toUpperCase() + status.slice(1)
+      {
+        ...order.toObject(),
+        eventName: populatedOrder?.event?.name || "Event",
+      },
+      status.charAt(0).toUpperCase() + status.slice(1),
     );
 
     await sendEmail({
       to: order.contactInfo.email,
       subject: emailContent.subject,
-      html: emailContent.html
+      html: emailContent.html,
     });
 
     res.json({
       success: true,
-      message: 'Order status updated',
-      order
+      message: "Order status updated",
+      order,
     });
   } catch (error) {
-    console.error('Update order status error:', error);
+    console.error("Update order status error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update order status'
+      message: "Failed to update order status",
     });
   }
 };
@@ -437,27 +476,27 @@ export const addOrderNote = async (req, res) => {
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: 'Order not found'
+        message: "Order not found",
       });
     }
 
     order.notes.push({
       text: req.body.text,
       addedBy: req.user._id,
-      addedAt: new Date()
+      addedAt: new Date(),
     });
     await order.save();
 
     res.json({
       success: true,
-      message: 'Note added',
-      order
+      message: "Note added",
+      order,
     });
   } catch (error) {
-    console.error('Add order note error:', error);
+    console.error("Add order note error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to add note'
+      message: "Failed to add note",
     });
   }
 };
