@@ -145,6 +145,7 @@ export const getOrder = async (req, res) => {
 
     // Check if user owns the order or is admin
     if (
+      order.user &&
       order.user._id.toString() !== req.user._id.toString() &&
       req.user.role !== "admin"
     ) {
@@ -215,11 +216,15 @@ export const cancelOrder = async (req, res) => {
       "Cancelled",
     );
 
-    await sendEmail({
-      to: order.contactInfo.email,
-      subject: emailContent.subject,
-      html: emailContent.html,
-    });
+    try {
+      await sendEmail({
+        to: order.contactInfo.email,
+        subject: emailContent.subject,
+        html: emailContent.html,
+      });
+    } catch (err) {
+      console.error("Email failed:", err.message);
+    }
 
     res.json({
       success: true,
@@ -297,6 +302,34 @@ export const addRating = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to add rating",
+    });
+  }
+};
+
+export const getTrackOrder = async (req, res) => {
+  try {
+    console.log("Track order request, params:", req.params);
+    const { trackingId } = req.params;
+
+    const order = await Order.findOne({ orderNumber: trackingId });
+
+    console.log("Track order found:", order);
+  
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: order,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
     });
   }
 };

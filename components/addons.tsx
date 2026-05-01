@@ -158,7 +158,7 @@ export function Addons() {
             size="lg"
             className="gradient-primary text-primary-foreground hover:opacity-90 shadow-lg"
           >
-            <Link href="#booking">Add to Your Package</Link>
+            {/* <Link href="#booking">Add to Your Package</Link> */}
           </Button>
         </motion.div>
       </div>

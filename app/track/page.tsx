@@ -22,15 +22,25 @@ import {
   AlertCircle
 } from "lucide-react"
 
-interface BookingData {
-  trackingId: string
-  name: string
-  eventType: string
-  eventDate: string
-  venue: string
-  guestCount: number
-  packageType: string
+interface OrderData {
+  orderNumber: string
+
+  contactInfo: {
+    name: string
+  }
+
+  eventDetails: {
+    eventDate: string
+    venue: string
+    guestCount: number
+  }
+
+  packageSelected: {
+    name: string
+  }
+
   status: 'pending' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled'
+
   createdAt: string
 }
 
@@ -59,7 +69,7 @@ const getStatusIndex = (status: string) => {
 
 export default function TrackBookingPage() {
   const [trackingId, setTrackingId] = useState("")
-  const [booking, setBooking] = useState<BookingData | null>(null)
+  const [booking, setBooking] = useState<OrderData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [searched, setSearched] = useState(false)
@@ -77,9 +87,12 @@ export default function TrackBookingPage() {
     setSearched(true)
 
     try {
-      const response = await fetch(`/api/bookings/track?trackingId=${encodeURIComponent(trackingId.trim())}`)
-      const data = await response.json()
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders/track/${trackingId}`)
 
+      console.log("API Response:", response);
+
+      const data = await response.json()
+      console.log("API Data:", data);
       if (data.success) {
         setBooking(data.data)
       } else {
@@ -305,7 +318,7 @@ export default function TrackBookingPage() {
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Event Date</p>
-                        <p className="font-medium text-foreground">{formatDate(booking.eventDate)}</p>
+                        <p className="font-medium text-foreground">{formatDate(booking.eventDetails?.eventDate)}</p>
                       </div>
                     </div>
 
@@ -315,7 +328,7 @@ export default function TrackBookingPage() {
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Event Type</p>
-                        <p className="font-medium text-foreground">{booking.eventType}</p>
+                        <p className="font-medium text-foreground">{booking.packageSelected?.name}</p>
                       </div>
                     </div>
 
@@ -325,7 +338,7 @@ export default function TrackBookingPage() {
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Venue</p>
-                        <p className="font-medium text-foreground">{booking.venue}</p>
+                        <p className="font-medium text-foreground">{booking.eventDetails?.venue}</p>
                       </div>
                     </div>
 
@@ -335,7 +348,7 @@ export default function TrackBookingPage() {
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Guest Count</p>
-                        <p className="font-medium text-foreground">{booking.guestCount} guests</p>
+                        <p className="font-medium text-foreground">{booking.eventDetails?.guestCount} guests</p>
                       </div>
                     </div>
                   </div>
@@ -350,7 +363,7 @@ export default function TrackBookingPage() {
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Selected Package</p>
-                        <p className="font-semibold text-foreground">{booking.packageType}</p>
+                        <p className="font-semibold text-foreground">{booking.packageSelected?.name}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">

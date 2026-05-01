@@ -5,6 +5,7 @@ import {
   getOrder,
   cancelOrder,
   addRating,
+  getTrackOrder,
   getAllOrders,
   updateOrderStatus,
   addOrderNote
@@ -18,6 +19,7 @@ router.post('/', protect, createOrder); // Allow guests to create bookings
 
 // User routes - require authentication
 router.get('/my-orders', protect, getMyOrders);
+router.get('/track/:trackingId', optionalAuth, getTrackOrder);
 router.get('/:id', protect, getOrder);
 router.put('/:id/cancel', protect, cancelOrder);
 router.put('/:id/rating', protect, addRating);

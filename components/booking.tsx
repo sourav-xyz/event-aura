@@ -1,15 +1,21 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar, Send, Sparkles, Copy, CheckCircle2 } from "lucide-react"
-import { useState, useEffect, Suspense } from "react"
-import { useSearchParams } from "next/navigation"
+import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar, Send, Sparkles, Copy, CheckCircle2 } from "lucide-react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
 const eventTypes = [
   "Wedding",
@@ -22,26 +28,38 @@ const eventTypes = [
   "Anniversary",
   "Housewarming",
   "Other",
-]
+];
 
 const packageOptions = [
-  { value: "Silver", label: "Silver - Basic Decoration (From Rs. 15,000)", price: 15000 },
-  { value: "Gold", label: "Gold - Decoration + Cake + Photography (From Rs. 35,000)", price: 35000 },
-  { value: "Premium", label: "Premium - All-in-one Package (From Rs. 75,000)", price: 75000 },
+  {
+    value: "Silver",
+    label: "Silver - Basic Decoration (From Rs. 15,000)",
+    price: 15000,
+  },
+  {
+    value: "Gold",
+    label: "Gold - Decoration + Cake + Photography (From Rs. 35,000)",
+    price: 35000,
+  },
+  {
+    value: "Premium",
+    label: "Premium - All-in-one Package (From Rs. 75,000)",
+    price: 75000,
+  },
   { value: "Custom", label: "Custom Package - Build Your Own", price: 0 },
-]
+];
 
 interface BookingFormData {
-  name: string
-  email: string
-  phone: string
-  eventType: string
-  eventDate: string
-  guestCount: string
-  venue: string
-  packageType: string
-  customServices: string[]
-  additionalNotes: string
+  name: string;
+  email: string;
+  phone: string;
+  eventType: string;
+  eventDate: string;
+  guestCount: string;
+  venue: string;
+  packageType: string;
+  customServices: string[];
+  additionalNotes: string;
 }
 
 export function Booking() {
@@ -49,7 +67,7 @@ export function Booking() {
     <Suspense fallback={<BookingLoadingFallback />}>
       <BookingForm />
     </Suspense>
-  )
+  );
 }
 
 function BookingLoadingFallback() {
@@ -65,11 +83,11 @@ function BookingLoadingFallback() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 function BookingForm() {
-  const searchParams = useSearchParams() ?? new URLSearchParams()
+  const searchParams = useSearchParams() ?? new URLSearchParams();
   const [formData, setFormData] = useState<BookingFormData>({
     name: "",
     email: "",
@@ -81,48 +99,74 @@ function BookingForm() {
     packageType: "",
     customServices: [],
     additionalNotes: "",
-  })
-  const [submitted, setSubmitted] = useState(false)
-  const [trackingId, setTrackingId] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [copied, setCopied] = useState(false)
+  });
+  const [submitted, setSubmitted] = useState(false);
+  const [trackingId, setTrackingId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const packageParam = searchParams.get('package')
-    const servicesParam = searchParams.get('services')
+    const packageParam = searchParams.get("package");
+    const servicesParam = searchParams.get("services");
 
     if (packageParam) {
       // Map package names to match packageOptions values
-      const validPackages = ['Silver', 'Gold', 'Premium', 'Custom']
+      const validPackages = ["Silver", "Gold", "Premium", "Custom"];
       if (validPackages.includes(packageParam)) {
-        setFormData(prev => ({ ...prev, packageType: packageParam }))
+        setFormData((prev) => ({ ...prev, packageType: packageParam }));
       }
     }
-    
+
     if (servicesParam) {
-      setFormData(prev => ({ ...prev, customServices: servicesParam.split(',') }))
+      setFormData((prev) => ({
+        ...prev,
+        customServices: servicesParam.split(","),
+      }));
     }
-  }, [searchParams])
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
-    console.log("Submitting booking with data:", formData) // Debug log 
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    if (!formData.eventType || !formData.packageType) {
+      setError("Please select all required fields");
+      setLoading(false);
+      return;
+    }
+
+    if (!/^\d{10}$/.test(formData.phone)) {
+      setError("Enter valid 10 digit phone number");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.guestCount || Number(formData.guestCount) <= 0) {
+      setError("Enter valid guest count");
+      setLoading(false);
+      return;
+    }
+
+    console.log("Submitting booking with data:", formData); // Debug log
+
     try {
-      let packagePrice = 0
-      const selectedPackage = packageOptions.find(pkg => pkg.value === formData.packageType)
+      let packagePrice = 0;
+      const selectedPackage = packageOptions.find(
+        (pkg) => pkg.value === formData.packageType,
+      );
 
       if (selectedPackage) {
-        packagePrice = selectedPackage.price
+        packagePrice = selectedPackage.price;
       }
 
       const transformedData = {
         eventDetails: {
+          eventType: formData.eventType,
           eventDate: formData.eventDate,
           venue: formData.venue,
-          guestCount: Number(formData.guestCount) || 0,
+          guestCount: Number(formData.guestCount),
           specialRequests: formData.additionalNotes,
         },
         contactInfo: {
@@ -130,11 +174,13 @@ function BookingForm() {
           email: formData.email,
           phone: formData.phone,
         },
-        packageSelected: selectedPackage ? {
-          name: selectedPackage.label,
-          price: packagePrice,
-          features: []
-        } : null,
+        packageSelected: selectedPackage
+          ? {
+              name: selectedPackage.label,
+              price: packagePrice,
+              features: [],
+            }
+          : null,
         themeSelected: null,
         addonsSelected: [],
         pricing: {
@@ -144,60 +190,84 @@ function BookingForm() {
           subtotal: packagePrice,
           discount: 0,
           tax: 0,
-          total: packagePrice
-        }
-      }
+          total: packagePrice,
+        },
+      };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // 🔥 ADD THIS LINE
-        body: JSON.stringify(transformedData),
-      })
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/orders`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include", // 🔥 ADD THIS LINE
+          body: JSON.stringify(transformedData),
+        },
+      );
       console.log("API response status:", response);
-      if (!response.ok) {
-        throw new Error('Server error')
-      }
 
-      const data = await response.json()
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Server error");
+      }
 
       if (data.success && data.data) {
-        setTrackingId(data.data.trackingId || 'N/A')
-        setSubmitted(true)
-      } else {
-        setError(data.message || 'Something went wrong')
-      }
+        if (!data.data.trackingId) {
+          throw new Error("Tracking ID missing");
+        }
+        setTrackingId(data.data.trackingId);
+        setSubmitted(true);
+        setSubmitted(true);
 
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          eventType: "",
+          eventDate: "",
+          guestCount: "",
+          venue: "",
+          packageType: "",
+          customServices: [],
+          additionalNotes: "",
+        });
+      } else {
+        setError(data.message || "Something went wrong");
+      }
     } catch (err: any) {
-      console.error(err)
-      setError(err.message || 'Failed to submit booking')
+      console.error(err);
+      setError(err.message || "Failed to submit booking");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const copyTrackingId = () => {
-    navigator.clipboard.writeText(trackingId)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+    navigator.clipboard.writeText(trackingId);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <section id="booking" className="py-24 bg-muted/30">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}  
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="text-primary font-semibold text-sm uppercase tracking-wider">Book Now</span>
+          <span className="text-primary font-semibold text-sm uppercase tracking-wider">
+            Book Now
+          </span>
           <h2 className="text-4xl md:text-5xl font-bold mt-3 mb-4 text-balance">
-            Let&apos;s Create <span className="text-gradient">Magic Together</span>
+            Let&apos;s Create{" "}
+            <span className="text-gradient">Magic Together</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto text-pretty">
-            Fill out the form below and our team will get back to you within 24 hours.
+            Fill out the form below and our team will get back to you within 24
+            hours.
           </p>
         </motion.div>
 
@@ -214,7 +284,9 @@ function BookingForm() {
                 <div className="gradient-primary p-2 rounded-xl">
                   <Sparkles className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground">Event Booking Form</h3>
+                <h3 className="text-xl font-semibold text-foreground">
+                  Event Booking Form
+                </h3>
               </div>
             </CardHeader>
             <CardContent className="p-6">
@@ -227,18 +299,25 @@ function BookingForm() {
                   <div className="w-20 h-20 gradient-primary rounded-full flex items-center justify-center mx-auto mb-6">
                     <CheckCircle2 className="h-10 w-10 text-primary-foreground" />
                   </div>
-                  <h4 className="text-2xl font-bold text-foreground mb-2">Booking Confirmed!</h4>
+                  <h4 className="text-2xl font-bold text-foreground mb-2">
+                    Booking Confirmed!
+                  </h4>
                   <p className="text-muted-foreground mb-6">
-                    We&apos;ve received your booking request. Our team will contact you soon!
+                    We&apos;ve received your booking request. Our team will
+                    contact you soon!
                   </p>
-                  
+
                   <div className="bg-muted p-4 rounded-xl mb-6">
-                    <p className="text-sm text-muted-foreground mb-2">Your Tracking ID</p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Your Tracking ID
+                    </p>
                     <div className="flex items-center justify-center gap-2">
-                      <span className="text-2xl font-mono font-bold text-primary">{trackingId}</span>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <span className="text-2xl font-mono font-bold text-primary">
+                        {trackingId}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={copyTrackingId}
                         className="h-8 w-8"
                       >
@@ -273,7 +352,9 @@ function BookingForm() {
                         id="name"
                         placeholder="Enter your name"
                         value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
                         required
                         className="bg-background"
                       />
@@ -285,7 +366,9 @@ function BookingForm() {
                         type="email"
                         placeholder="your@email.com"
                         value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
                         required
                         className="bg-background"
                       />
@@ -300,7 +383,9 @@ function BookingForm() {
                         type="tel"
                         placeholder="+91 98765 43210"
                         value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, phone: e.target.value })
+                        }
                         required
                         className="bg-background"
                       />
@@ -313,7 +398,12 @@ function BookingForm() {
                         placeholder="Number of guests"
                         min="1"
                         value={formData.guestCount}
-                        onChange={(e) => setFormData({ ...formData, guestCount: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            guestCount: e.target.value,
+                          })
+                        }
                         required
                         className="bg-background"
                       />
@@ -325,7 +415,9 @@ function BookingForm() {
                       <Label htmlFor="eventType">Event Type *</Label>
                       <Select
                         value={formData.eventType}
-                        onValueChange={(value) => setFormData({ ...formData, eventType: value })}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, eventType: value })
+                        }
                         required
                       >
                         <SelectTrigger className="bg-background">
@@ -347,10 +439,15 @@ function BookingForm() {
                           id="eventDate"
                           type="date"
                           value={formData.eventDate}
-                          onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              eventDate: e.target.value,
+                            })
+                          }
                           required
                           className="bg-background"
-                          min={new Date().toISOString().split('T')[0]}
+                          min={new Date().toISOString().split("T")[0]}
                         />
                         <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                       </div>
@@ -363,7 +460,9 @@ function BookingForm() {
                       id="venue"
                       placeholder="Enter venue address or location"
                       value={formData.venue}
-                      onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, venue: e.target.value })
+                      }
                       required
                       className="bg-background"
                     />
@@ -373,7 +472,9 @@ function BookingForm() {
                     <Label htmlFor="packageType">Select Package *</Label>
                     <Select
                       value={formData.packageType}
-                      onValueChange={(value) => setFormData({ ...formData, packageType: value })}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, packageType: value })
+                      }
                       required
                     >
                       <SelectTrigger className="bg-background">
@@ -391,10 +492,12 @@ function BookingForm() {
 
                   {formData.customServices.length > 0 && (
                     <div className="p-3 bg-primary/5 rounded-lg">
-                      <p className="text-sm font-medium text-foreground mb-2">Selected Services:</p>
+                      <p className="text-sm font-medium text-foreground mb-2">
+                        Selected Services:
+                      </p>
                       <div className="flex flex-wrap gap-2">
                         {formData.customServices.map((service, index) => (
-                          <span 
+                          <span
                             key={index}
                             className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full"
                           >
@@ -412,14 +515,19 @@ function BookingForm() {
                       placeholder="Tell us more about your event, theme preferences, or any special requirements..."
                       rows={4}
                       value={formData.additionalNotes}
-                      onChange={(e) => setFormData({ ...formData, additionalNotes: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          additionalNotes: e.target.value,
+                        })
+                      }
                       className="bg-background resize-none"
                     />
                   </div>
 
-                  <Button 
-                    type="submit" 
-                    size="lg" 
+                  <Button
+                    type="submit"
+                    size="lg"
                     className="w-full gradient-primary text-primary-foreground hover:opacity-90 shadow-lg"
                     disabled={loading}
                   >
@@ -442,5 +550,5 @@ function BookingForm() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }

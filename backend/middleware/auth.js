@@ -70,7 +70,7 @@ export const adminOnly = (req, res, next) => {
 
 // Optional auth - attach user if token exists but don't require it
 export const optionalAuth = async (req, res, next) => {
-  // console.log("OPTIONAL AUTH HIT");
+  console.log("OPTIONAL AUTH HIT");
   // console.log("COOKIES:", req.cookies);
   try {
     const accessToken = req.cookies.accessToken;
