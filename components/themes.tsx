@@ -8,21 +8,21 @@ import Link from "next/link"
 
 const themes = [
  {
-    name: "Kids Theme",
+    name: "Avengers Theme",
     description: "Colorful, playful setups with cartoon characters and fun elements",
-    image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80",
+    image: "https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     color: "from-cyan-400 to-blue-500",
   },
   {
     name: "Traditional Theme",
     description: "Cultural richness with marigolds, diyas, and ethnic decorations",
-    image: "https://images.unsplash.com/photo-1604604994333-f1b0e9471186?w=600&q=80",
+    image: "https://images.unsplash.com/photo-1745573673499-f8dd149e52ef?q=80&w=1634&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     color: "from-orange-400 to-red-500",
   },
   {
     name: "Bollywood Theme",
     description: "Glamorous filmi style with vibrant colors and dramatic setups",
-    image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&q=80",
+    image: "https://images.unsplash.com/photo-1678514823362-fd5ec94505a2?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     color: "from-purple-400 to-pink-500",
   },
 ]
