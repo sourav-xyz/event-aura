@@ -25,7 +25,8 @@ const app = express();
 app.use(cors({
   origin: [
   "http://localhost:3000",
-  "https://event-aura-1.onrender.com"
+  "https://event-aura-1.onrender.com",
+  "https://event-aura-jri4.onrender.com"
 ],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization'],
