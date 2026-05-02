@@ -25,7 +25,7 @@ const app = express();
 app.use(cors({
   origin: [
   "http://localhost:3000",
-  "https://your-vercel-app.vercel.app"
+  "https://event-aura-1.onrender.com"
 ],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization'],
