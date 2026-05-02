@@ -22,16 +22,25 @@ connectDB();
 const app = express();
 
 // Enable CORS (must come before body parsers and cookie parser)
-app.use(cors({
-  origin: [
+const allowedOrigins = [
   "http://localhost:3000",
-  "https://event-aura-1.onrender.com",
-  "https://event-aura-jri4.onrender.com"
-],
+    "https://event-aura-umber.vercel.app/"
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
+app.options("*", cors());
 
 // Body parser
 app.use(express.json());
