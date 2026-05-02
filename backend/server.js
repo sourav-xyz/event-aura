@@ -53,6 +53,9 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() }); 
 });
 
+app.use("/",(req,res)=>{
+  res.send("Api is working");
+})
 // Error handlers
 app.use(notFound);
 app.use(errorHandler);
