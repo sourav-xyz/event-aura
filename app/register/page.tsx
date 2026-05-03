@@ -30,8 +30,11 @@ export default function RegisterPage() {
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
+
+    console.log('Form submitted with data:', formData);
+
     e.preventDefault();
-    console.log(formData);
+    // console.log(formdata);
     
     setError('');
 
