@@ -37,11 +37,8 @@ export const setTokenCookies = (res, accessToken, refreshToken) => {
 
   const cookieOptions = {
     httpOnly: true,
-    // secure: true in production (HTTPS). For localhost development, leave false.
-    secure: isProduction,
-    // Use 'lax' in development so cookies are accepted by browsers
-    // without requiring Secure (which SameSite=None demands).
-    sameSite: isProduction ? 'strict' : 'lax',
+    secure: isProduction, // HTTPS required in production
+    sameSite: isProduction ? 'none' : 'lax', // ✅ FIX
     path: '/',
   };
 
@@ -62,7 +59,7 @@ export const clearTokenCookies = (res) => {
   const cookieOptions = {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax', // 🔥 FIX
+    sameSite: isProduction ? 'none' : 'lax', // 🔥 FIX
     path: '/',
     expires: new Date(0),
   };
