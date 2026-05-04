@@ -1,14 +1,20 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authAPI } from '@/lib/api/config';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { authAPI } from "@/lib/api/config";
 
 interface User {
   _id: string;
   name: string;
   email: string;
   phone: string;
-  role: 'user' | 'admin';
+  role: "user" | "admin";
   avatar?: string;
   address?: {
     street?: string;
@@ -22,8 +28,23 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: { name: string; email: string; phone: string; password: string }) => Promise<void>;
+
+  login: (email: string, password: string) => Promise<{
+    success: boolean;
+    user: User;
+  }>;
+
+  register: (data: {
+    name: string;
+    email: string;
+    phone: string;
+    password: string;
+  }) => Promise<{
+    success: boolean;
+    message: string;
+    user: User;
+  }>;
+
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -36,7 +57,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      const response = await authAPI.getMe() as { success: boolean; user: User };
+      const response = (await authAPI.getMe()) as {
+        success: boolean;
+        user: User;
+      };
+
       if (response.success) {
         setUser(response.user);
       }
@@ -53,21 +78,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       }
     };
+
     checkAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await authAPI.login({ email, password }) as { success: boolean; user: User };
+    const response = (await authAPI.login({ email, password })) as {
+      success: boolean;
+      user: User;
+    };
+
     if (response.success) {
       setUser(response.user);
     }
+
+    return response;
   };
 
-  const register = async (data: { name: string; email: string; phone: string; password: string }) => {
-    const response = await authAPI.register(data) as { success: boolean; user: User };
+  const register = async (data: {
+    name: string;
+    email: string;
+    phone: string;
+    password: string;
+  }) => {
+    const response = (await authAPI.register(data)) as {
+      success: boolean;
+      message: string;
+      user: User;
+    };
+
     if (response.success) {
       setUser(response.user);
     }
+
+    return response;
   };
 
   const logout = async () => {
@@ -79,7 +123,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, register, logout, refreshUser }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -87,8 +133,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
+
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
+
   return context;
 }

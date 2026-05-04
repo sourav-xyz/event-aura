@@ -9,7 +9,6 @@ export const register = async (req, res) => {
   try {
     const { name, email, phone, password } = req.body;
 
-    // Check if user exists
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({
@@ -18,7 +17,6 @@ export const register = async (req, res) => {
       });
     }
 
-    // Create user
     const user = await User.create({
       name,
       email,
@@ -26,34 +24,26 @@ export const register = async (req, res) => {
       password
     });
 
-    // Generate verification token
     const verificationToken = user.generateVerificationToken();
+
+    const tokens = generateTokens(user._id);
+    user.refreshToken = tokens.refreshToken;
+
     await user.save();
 
-    // Send verification email
+    setTokenCookies(res, tokens.accessToken, tokens.refreshToken);
+
     const verificationLink = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
     const emailContent = emailTemplates.verification(user.name, verificationToken);
+
     console.log('Verification link:', verificationLink);
-    await sendEmail({
+
+    sendEmail({
       to: user.email,
       subject: emailContent.subject,
       html: emailContent.html
-    });
-
-    // Generate tokens
-    const tokens = generateTokens(user._id);
-    user.refreshToken = tokens.refreshToken;
-    await user.save();
-
-    // Set cookies
-    setTokenCookies(res, tokens.accessToken, tokens.refreshToken);
-
-    // Send welcome email
-    const welcomeEmail = emailTemplates.welcome(user.name);
-    await sendEmail({
-      to: user.email,
-      subject: welcomeEmail.subject,
-      html: welcomeEmail.html
+    }).catch((err) => {
+      console.log("Verification email failed:", err.message);
     });
 
     res.status(201).json({
@@ -68,6 +58,7 @@ export const register = async (req, res) => {
         isEmailVerified: user.isEmailVerified
       }
     });
+
   } catch (error) {
     console.error('Register error:', error);
     res.status(500).json({

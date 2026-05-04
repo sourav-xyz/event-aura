@@ -51,13 +51,18 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      await register({
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        password: formData.password
-      });
-      router.push('/profile');
+      const res = await register({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      password: formData.password
+    });
+
+    console.log('Registration response:', res);
+
+    if (res?.success) {
+      router.push('/verify-email');
+    }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
