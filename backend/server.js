@@ -60,16 +60,17 @@ app.use('/api/users', userRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/orders', orderRoutes);
-// app.use('/api/bookings', bookingRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() }); 
 });
 
-app.use("/",(req,res)=>{
+// ✅ Root route - SABSE LAST mein aur app.get use karo
+app.get("/", (req, res) => {
   res.send("Api is working");
-})
+});
+
 // Error handlers
 app.use(notFound);
 app.use(errorHandler);
