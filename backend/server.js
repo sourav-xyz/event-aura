@@ -24,7 +24,7 @@ const app = express();
 // Enable CORS (must come before body parsers and cookie parser)
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://event-aura-alpha.vercel.app"
+  "https://event-aura-pi.vercel.app"
 ];
 
 const corsOptions = {
