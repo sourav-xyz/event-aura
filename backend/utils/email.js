@@ -3,12 +3,12 @@ import nodemailer from 'nodemailer';
 // Create transporter
 const createTransporter = () => {
   return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 25,
-    secure: false,
+    host: 'smtp.resend.com',
+    port: 465,
+    secure: true,
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      user: 'resend',
+      pass: process.env.RESEND_API_KEY,
     },
   });
 };
