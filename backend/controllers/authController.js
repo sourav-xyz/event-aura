@@ -38,29 +38,28 @@ export const register = async (req, res) => {
 
     console.log('Verification link:', verificationLink);
 
-    try {
-  await sendEmail({
-    to: user.email,
-    subject: emailContent.subject,
-    html: emailContent.html
-  });
-  console.log('Verification email sent to:', user.email);
-} catch (err) {
-  console.error("Verification email failed:", err.message);
-}
+   res.status(201).json({
+  success: true,
+  message: 'Registration successful. Please verify your email.',
+  user: {
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+    isEmailVerified: user.isEmailVerified
+  }
+});
 
-    res.status(201).json({
-      success: true,
-      message: 'Registration successful. Please verify your email.',
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        isEmailVerified: user.isEmailVerified
-      }
-    });
+sendEmail({
+  to: user.email,
+  subject: emailContent.subject,
+  html: emailContent.html
+}).then(() => {
+  console.log('Verification email sent to:', user.email);
+}).catch((err) => {
+  console.error("Verification email failed:", err.message);
+});
 
   } catch (error) {
     console.error('Register error:', error);
