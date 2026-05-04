@@ -38,13 +38,16 @@ export const register = async (req, res) => {
 
     console.log('Verification link:', verificationLink);
 
-    sendEmail({
-      to: user.email,
-      subject: emailContent.subject,
-      html: emailContent.html
-    }).catch((err) => {
-      console.log("Verification email failed:", err.message);
-    });
+    try {
+  await sendEmail({
+    to: user.email,
+    subject: emailContent.subject,
+    html: emailContent.html
+  });
+  console.log('Verification email sent to:', user.email);
+} catch (err) {
+  console.error("Verification email failed:", err.message);
+}
 
     res.status(201).json({
       success: true,
