@@ -1,24 +1,27 @@
 import nodemailer from 'nodemailer';
 
+import nodemailer from 'nodemailer';
+
 // Create transporter
 const createTransporter = () => {
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: false,
+    service: 'gmail',  // ✅ Bas yeh
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
-    family: 4,
   });
 };
 
-// Send email
 export const sendEmail = async ({ to, subject, html }) => {
   try {
     const transporter = createTransporter();
-    
+
+    console.log('SMTP Config:', {
+      user: process.env.SMTP_USER,
+      passSet: !!process.env.SMTP_PASS
+    });
+
     const mailOptions = {
       from: process.env.EMAIL_FROM,
       to,
@@ -34,7 +37,6 @@ export const sendEmail = async ({ to, subject, html }) => {
     return false;
   }
 };
-
 // Email Templates
 export const emailTemplates = {
   welcome: (name) => ({
