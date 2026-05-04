@@ -10,20 +10,20 @@ const contactInfo = [
   {
     icon: Phone,
     title: "Call Us",
-    value: "+91 98765 43210",
-    href: "tel:+919876543210",
+    value: "+91 96587 80033",
+    href: "tel:+919658780033",
   },
   {
     icon: MessageCircle,
     title: "WhatsApp",
-    value: "+91 98765 43210",
-    href: "https://wa.me/919876543210",
+    value: "+91 96587 80033",
+    href: "https://wa.me/919658780033?text=Hi! I'm interested in your event services.",
   },
   {
     icon: Mail,
     title: "Email",
     value: "hello@eventaura.in",
-    href: "mailto:hello@eventaura.in",
+    href: "https://mail.google.com/mail/?view=cm&fs=1&to=eventaurapvt@gmail.com",
   },
   {
     icon: Clock,
@@ -64,7 +64,7 @@ export function Contact() {
               {contactInfo.map((info, index) => (
                 <Card key={info.title} className="border-border/50 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300">
                   <CardContent className="p-5">
-                    <Link href={info.href} className="flex items-start gap-4">
+                    <Link href={info.href} target="_blank" className="flex items-start gap-4">
                       <div className="gradient-primary p-3 rounded-xl shrink-0">
                         <info.icon className="h-5 w-5 text-primary-foreground" />
                       </div>
