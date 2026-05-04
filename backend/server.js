@@ -24,8 +24,10 @@ const app = express();
 // Enable CORS (must come before body parsers and cookie parser)
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://event-aura-pi.vercel.app"
-];
+  "https://event-aura-pi.vercel.app",
+  "https://event-aura-h42z.vercel.app",
+  process.env.FRONTEND_URL,
+].filter(Boolean);
 
 const corsOptions = {
   origin: function (origin, callback) {
@@ -35,7 +37,7 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    return callback(new Error("Not allowed by CORS"));
+    return callback(new Error(`Not allowed by CORS: ${origin}`));
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
