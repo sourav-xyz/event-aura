@@ -21,32 +21,14 @@ connectDB();
 
 const app = express();
 
-// Enable CORS (must come before body parsers and cookie parser)
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://event-aura-pi.vercel.app",
-  "https://event-aura-h42z.vercel.app",
-  "https://event-aura-production-9a1b.up.railway.app",
-  process.env.FRONTEND_URL,
-].filter(Boolean);
-
-const corsOptions = {
-  origin: function (origin, callback) {
-    console.log("Request Origin:", origin);
-
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-
-    return callback(new Error(`Not allowed by CORS: ${origin}`));
-  },
+// Enable CORS
+app.use(cors({
+  origin: true,
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-};
-
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+}));
+app.options("*", cors({ origin: true, credentials: true }));
 
 // Body parser
 app.use(express.json());
