@@ -17,10 +17,10 @@ export const sendEmail = async ({ to, subject, html }) => {
   try {
     const transporter = createTransporter();
 
-    console.log('SMTP Config:', {
-      user: process.env.SMTP_USER,
-      passSet: !!process.env.SMTP_PASS
-    });
+   console.log('SMTP Config:', {
+  user: 'resend',
+  passSet: !!process.env.RESEND_API_KEY  // ← RESEND_API_KEY check karo
+});
 
     const mailOptions = {
       from: process.env.EMAIL_FROM,
