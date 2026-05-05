@@ -26,6 +26,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "https://event-aura-pi.vercel.app",
   "https://event-aura-h42z.vercel.app",
+  "https://event-aura-production-9a1b.up.railway.app",
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
